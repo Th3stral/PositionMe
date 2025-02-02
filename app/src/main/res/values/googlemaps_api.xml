@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-        <string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
-        ${BuildConfig.MAPS_API_KEY}
-    </string>
+        <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD8CffvvgGSzBSLrvMzN0KNBO9_y2KeEUQ</string>
 </resources>
