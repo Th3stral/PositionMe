@@ -176,10 +176,10 @@ public class StartLocationFragment extends Fragment {
              */
             @Override
             public void onClick(View view) {
+                // Set the start location obtained first
+                sensorFusion.setStartGNSSLatitude(startPosition);
                 // Starts recording data from the sensor fusion
                 sensorFusion.startRecording();
-                // Set the start location obtained
-                sensorFusion.setStartGNSSLatitude(startPosition);
                 // Navigate to the RecordingFragment
                 NavDirections action = StartLocationFragmentDirections.actionStartLocationFragmentToRecordingFragment();
                 Navigation.findNavController(view).navigate(action);

@@ -794,7 +794,8 @@ public class SensorFusion implements SensorEventListener, Observer {
                 .setGyroscopeInfo(createInfoBuilder(gyroscopeSensor))
                 .setMagnetometerInfo(createInfoBuilder(magnetometerSensor))
                 .setBarometerInfo(createInfoBuilder(barometerSensor))
-                .setLightSensorInfo(createInfoBuilder(lightSensor));
+                .setLightSensorInfo(createInfoBuilder(lightSensor))
+                .setStartPosition(createLatLongBuilder(sensorFusion.getGNSSLatitude(true)));
         this.storeTrajectoryTimer = new Timer();
         this.storeTrajectoryTimer.scheduleAtFixedRate(new storeDataInTrajectory(), 0, TIME_CONST);
         this.pdrProcessing.resetPDR();
@@ -857,6 +858,20 @@ public class SensorFusion implements SensorEventListener, Observer {
                 .setPower(sensor.sensorInfo.getPower())
                 .setVersion(sensor.sensorInfo.getVersion())
                 .setType(sensor.sensorInfo.getType());
+    }
+
+    /**
+     * Creates a {@link Traj.Lat_Long_Position} object from the specified position.
+     *
+     * @param latlongposition position argument in float[2] containing latitude([0]) and longitude([1])
+     * @return Traj.Lat_Long_Position object to be used in building the trajectory
+     *
+     * @see Traj            Trajectory object used for communication with the server
+     */
+    private Traj.Lat_Long_Position.Builder createLatLongBuilder(float[] latlongposition) {
+        return Traj.Lat_Long_Position.newBuilder()
+                .setLat(latlongposition[0])
+                .setLong(latlongposition[1]);
     }
 
     /**
