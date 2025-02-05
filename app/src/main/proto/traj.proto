@@ -28,7 +28,7 @@ Sensor_Info magnetometer_info = 15;
 Sensor_Info barometer_info = 16;
 Sensor_Info light_sensor_info = 17;
 
-// new attribute to store starting lat lon
+// new attribute to store starting position
 Lat_Long_Position start_position = 18;
 
 }
@@ -152,6 +152,8 @@ message Sensor_Info {
 }
 
 message Lat_Long_Position {
+    // latitude between -90 and 90
     float lat = 1;
+    // longitude between -180 and 180
     float long = 2;
 }
