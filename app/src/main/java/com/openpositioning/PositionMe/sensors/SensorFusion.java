@@ -328,7 +328,9 @@ public class SensorFusion implements SensorEventListener, Observer {
                 // Save values
                 this.rotation = sensorEvent.values.clone();
                 float[] rotationVectorDCM = new float[9];
+                // Convert rotation vector to a 3*3 DCM
                 SensorManager.getRotationMatrixFromVector(rotationVectorDCM,this.rotation);
+                // Convert DCM to euler angles [0] = yaw(azimuth), [1] = pitch, [2] = roll
                 SensorManager.getOrientation(rotationVectorDCM, this.orientation);
                 break;
 

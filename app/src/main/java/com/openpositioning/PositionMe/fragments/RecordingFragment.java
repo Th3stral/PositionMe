@@ -535,6 +535,7 @@ public class RecordingFragment extends Fragment {
         elevation.setText(getString(R.string.elevation, String.format("%.1f", elevationVal)));
         //Rotate compass Marker according to direction of movement
         if (orientationMarker!=null) {
+            // azimuth given by @see sensorFusion.onSensorChanged() case Sensor.TYPE_ROTATION_VECTOR
             orientationMarker.setRotation((float) Math.toDegrees(sensorFusion.passOrientation()));
         }
     }

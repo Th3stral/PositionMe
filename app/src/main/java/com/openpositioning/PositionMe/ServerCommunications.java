@@ -12,6 +12,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.protobuf.util.JsonFormat;
 import com.openpositioning.PositionMe.fragments.FilesFragment;
+import com.openpositioning.PositionMe.fragments.ReplayDataProcessor;
 import com.openpositioning.PositionMe.sensors.Observable;
 import com.openpositioning.PositionMe.sensors.Observer;
 
@@ -213,6 +214,13 @@ public class ServerCommunications implements Observable {
      * @param localTrajectory the File object of the local trajectory to be uploaded
      */
     public void uploadLocalTrajectory(File localTrajectory) {
+
+//        // Local traj data decoding test (bin format)
+//        try {
+//            ReplayDataProcessor.protoDecoder(localTrajectory);
+//        } catch (Exception e) {
+//            System.err.println("Error decoding received trajectory");
+//        }
         // Instantiate client for HTTP requests
         OkHttpClient client = new OkHttpClient();
 
@@ -343,6 +351,13 @@ public class ServerCommunications implements Observable {
                     String storagePath = context.getFilesDir().toString();
 
                     File file = new File(storagePath, "received_trajectory.txt");
+
+//                    // server fetched data decoding test
+//                    try {
+//                        ReplayDataProcessor.protoDecoder(file);
+//                    } catch (Exception e) {
+//                        System.err.println("Error decoding received trajectory");
+//                    }
                     try (FileWriter fileWriter = new FileWriter(file)) {
                         fileWriter.write(receivedTrajectoryString);
                         fileWriter.flush();
