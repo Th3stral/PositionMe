@@ -898,7 +898,10 @@ public class SensorFusion implements SensorEventListener, Observer {
                     .setRotationVectorY(rotation[1])
                     .setRotationVectorZ(rotation[2])
                     .setRotationVectorW(rotation[3])
-                    .setStepCount(stepCounter))
+                    .setStepCount(stepCounter)
+                    .setAzimuth(orientation[0])) // new attribute to store azimuth of user
+//                    .setStepCount(stepCounter))
+
                     .addPositionData(Traj.Position_Sample.newBuilder()
                             .setMagX(magneticField[0])
                             .setMagY(magneticField[1])

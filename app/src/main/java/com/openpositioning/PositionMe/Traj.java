@@ -323,7 +323,7 @@ public final class Traj {
 
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -331,7 +331,7 @@ public final class Traj {
     boolean hasStartPosition();
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -339,7 +339,7 @@ public final class Traj {
     Traj.Lat_Long_Position getStartPosition();
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -1121,7 +1121,7 @@ public final class Traj {
     private Traj.Lat_Long_Position startPosition_;
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -1131,7 +1131,7 @@ public final class Traj {
     }
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -1141,7 +1141,7 @@ public final class Traj {
     }
     /**
      * <pre>
-     * new attribute to store starting lat lon
+     * new attribute to store starting position
      * </pre>
      *
      * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -4929,7 +4929,7 @@ public final class Traj {
           Traj.Lat_Long_Position, Traj.Lat_Long_Position.Builder, Traj.Lat_Long_PositionOrBuilder> startPositionBuilder_;
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -4939,7 +4939,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -4953,7 +4953,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -4973,7 +4973,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -4991,7 +4991,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -5013,7 +5013,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -5031,7 +5031,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -5043,7 +5043,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -5058,7 +5058,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * new attribute to store starting lat lon
+       * new attribute to store starting position
        * </pre>
        *
        * <code>optional .Lat_Long_Position start_position = 18;</code>
@@ -5820,6 +5820,15 @@ public final class Traj {
      * <code>optional int32 step_count = 12;</code>
      */
     int getStepCount();
+
+    /**
+     * <pre>
+     * ori
+     * </pre>
+     *
+     * <code>optional float azimuth = 13;</code>
+     */
+    float getAzimuth();
   }
   /**
    * Protobuf type {@code Motion_Sample}
@@ -5845,6 +5854,7 @@ public final class Traj {
       rotationVectorZ_ = 0F;
       rotationVectorW_ = 0F;
       stepCount_ = 0;
+      azimuth_ = 0F;
     }
 
     @java.lang.Override
@@ -5930,6 +5940,11 @@ public final class Traj {
             case 96: {
 
               stepCount_ = input.readInt32();
+              break;
+            }
+            case 109: {
+
+              azimuth_ = input.readFloat();
               break;
             }
           }
@@ -6083,6 +6098,19 @@ public final class Traj {
       return stepCount_;
     }
 
+    public static final int AZIMUTH_FIELD_NUMBER = 13;
+    private float azimuth_;
+    /**
+     * <pre>
+     * ori
+     * </pre>
+     *
+     * <code>optional float azimuth = 13;</code>
+     */
+    public float getAzimuth() {
+      return azimuth_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -6130,6 +6158,9 @@ public final class Traj {
       }
       if (stepCount_ != 0) {
         output.writeInt32(12, stepCount_);
+      }
+      if (azimuth_ != 0F) {
+        output.writeFloat(13, azimuth_);
       }
     }
 
@@ -6185,6 +6216,10 @@ public final class Traj {
       if (stepCount_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(12, stepCount_);
+      }
+      if (azimuth_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(13, azimuth_);
       }
       memoizedSize = size;
       return size;
@@ -6246,6 +6281,10 @@ public final class Traj {
               other.getRotationVectorW()));
       result = result && (getStepCount()
           == other.getStepCount());
+      result = result && (
+          java.lang.Float.floatToIntBits(getAzimuth())
+          == java.lang.Float.floatToIntBits(
+              other.getAzimuth()));
       return result;
     }
 
@@ -6291,6 +6330,9 @@ public final class Traj {
           getRotationVectorW());
       hash = (37 * hash) + STEP_COUNT_FIELD_NUMBER;
       hash = (53 * hash) + getStepCount();
+      hash = (37 * hash) + AZIMUTH_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getAzimuth());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -6433,6 +6475,8 @@ public final class Traj {
 
         stepCount_ = 0;
 
+        azimuth_ = 0F;
+
         return this;
       }
 
@@ -6467,6 +6511,7 @@ public final class Traj {
         result.rotationVectorZ_ = rotationVectorZ_;
         result.rotationVectorW_ = rotationVectorW_;
         result.stepCount_ = stepCount_;
+        result.azimuth_ = azimuth_;
         onBuilt();
         return result;
       }
@@ -6543,6 +6588,9 @@ public final class Traj {
         }
         if (other.getStepCount() != 0) {
           setStepCount(other.getStepCount());
+        }
+        if (other.getAzimuth() != 0F) {
+          setAzimuth(other.getAzimuth());
         }
         onChanged();
         return this;
@@ -6938,6 +6986,44 @@ public final class Traj {
       public Builder clearStepCount() {
         
         stepCount_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private float azimuth_ ;
+      /**
+       * <pre>
+       * ori
+       * </pre>
+       *
+       * <code>optional float azimuth = 13;</code>
+       */
+      public float getAzimuth() {
+        return azimuth_;
+      }
+      /**
+       * <pre>
+       * ori
+       * </pre>
+       *
+       * <code>optional float azimuth = 13;</code>
+       */
+      public Builder setAzimuth(float value) {
+        
+        azimuth_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * ori
+       * </pre>
+       *
+       * <code>optional float azimuth = 13;</code>
+       */
+      public Builder clearAzimuth() {
+        
+        azimuth_ = 0F;
         onChanged();
         return this;
       }
@@ -12732,11 +12818,19 @@ public final class Traj {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <pre>
+     * latitude between -90 and 90
+     * </pre>
+     *
      * <code>optional float lat = 1;</code>
      */
     float getLat();
 
     /**
+     * <pre>
+     * longitude between -180 and 180
+     * </pre>
+     *
      * <code>optional float long = 2;</code>
      */
     float getLong();
@@ -12818,6 +12912,10 @@ public final class Traj {
     public static final int LAT_FIELD_NUMBER = 1;
     private float lat_;
     /**
+     * <pre>
+     * latitude between -90 and 90
+     * </pre>
+     *
      * <code>optional float lat = 1;</code>
      */
     public float getLat() {
@@ -12827,6 +12925,10 @@ public final class Traj {
     public static final int LONG_FIELD_NUMBER = 2;
     private float long_;
     /**
+     * <pre>
+     * longitude between -180 and 180
+     * </pre>
+     *
      * <code>optional float long = 2;</code>
      */
     public float getLong() {
@@ -13127,12 +13229,20 @@ public final class Traj {
 
       private float lat_ ;
       /**
+       * <pre>
+       * latitude between -90 and 90
+       * </pre>
+       *
        * <code>optional float lat = 1;</code>
        */
       public float getLat() {
         return lat_;
       }
       /**
+       * <pre>
+       * latitude between -90 and 90
+       * </pre>
+       *
        * <code>optional float lat = 1;</code>
        */
       public Builder setLat(float value) {
@@ -13142,6 +13252,10 @@ public final class Traj {
         return this;
       }
       /**
+       * <pre>
+       * latitude between -90 and 90
+       * </pre>
+       *
        * <code>optional float lat = 1;</code>
        */
       public Builder clearLat() {
@@ -13153,12 +13267,20 @@ public final class Traj {
 
       private float long_ ;
       /**
+       * <pre>
+       * longitude between -180 and 180
+       * </pre>
+       *
        * <code>optional float long = 2;</code>
        */
       public float getLong() {
         return long_;
       }
       /**
+       * <pre>
+       * longitude between -180 and 180
+       * </pre>
+       *
        * <code>optional float long = 2;</code>
        */
       public Builder setLong(float value) {
@@ -13168,6 +13290,10 @@ public final class Traj {
         return this;
       }
       /**
+       * <pre>
+       * longitude between -180 and 180
+       * </pre>
+       *
        * <code>optional float long = 2;</code>
        */
       public Builder clearLong() {
@@ -13312,32 +13438,32 @@ public final class Traj {
       "t_sensor_info\030\021 \001(\0132\014.Sensor_Info\022*\n\016sta" +
       "rt_position\030\022 \001(\0132\022.Lat_Long_Position\">\n" +
       "\nPdr_Sample\022\032\n\022relative_timestamp\030\001 \001(\003\022" +
-      "\t\n\001x\030\002 \001(\002\022\t\n\001y\030\003 \001(\002\"\205\002\n\rMotion_Sample\022" +
+      "\t\n\001x\030\002 \001(\002\022\t\n\001y\030\003 \001(\002\"\226\002\n\rMotion_Sample\022" +
       "\032\n\022relative_timestamp\030\001 \001(\003\022\r\n\005acc_x\030\002 \001",
       "(\002\022\r\n\005acc_y\030\003 \001(\002\022\r\n\005acc_z\030\004 \001(\002\022\r\n\005gyr_" +
       "x\030\005 \001(\002\022\r\n\005gyr_y\030\006 \001(\002\022\r\n\005gyr_z\030\007 \001(\002\022\031\n" +
       "\021rotation_vector_x\030\010 \001(\002\022\031\n\021rotation_vec" +
       "tor_y\030\t \001(\002\022\031\n\021rotation_vector_z\030\n \001(\002\022\031" +
       "\n\021rotation_vector_w\030\013 \001(\002\022\022\n\nstep_count\030" +
-      "\014 \001(\005\"Z\n\017Position_Sample\022\032\n\022relative_tim" +
-      "estamp\030\001 \001(\003\022\r\n\005mag_x\030\002 \001(\002\022\r\n\005mag_y\030\003 \001" +
-      "(\002\022\r\n\005mag_z\030\004 \001(\002\"?\n\017Pressure_Sample\022\032\n\022" +
-      "relative_timestamp\030\001 \001(\003\022\020\n\010pressure\030\002 \001" +
-      "(\002\"9\n\014Light_Sample\022\032\n\022relative_timestamp",
-      "\030\001 \001(\003\022\r\n\005light\030\002 \001(\002\"\223\001\n\013GNSS_Sample\022\032\n" +
-      "\022relative_timestamp\030\001 \001(\003\022\020\n\010latitude\030\002 " +
-      "\001(\002\022\021\n\tlongitude\030\003 \001(\002\022\020\n\010altitude\030\004 \001(\002" +
-      "\022\020\n\010accuracy\030\005 \001(\002\022\r\n\005speed\030\006 \001(\002\022\020\n\010pro" +
-      "vider\030\007 \001(\t\"G\n\013WiFi_Sample\022\032\n\022relative_t" +
-      "imestamp\030\001 \001(\003\022\034\n\tmac_scans\030\002 \003(\0132\t.Mac_" +
-      "Scan\"A\n\010Mac_Scan\022\032\n\022relative_timestamp\030\001" +
-      " \001(\003\022\013\n\003mac\030\002 \001(\003\022\014\n\004rssi\030\003 \001(\005\"7\n\007AP_Da" +
-      "ta\022\013\n\003mac\030\001 \001(\003\022\014\n\004ssid\030\002 \001(\t\022\021\n\tfrequen" +
-      "cy\030\003 \001(\003\"m\n\013Sensor_Info\022\014\n\004name\030\001 \001(\t\022\016\n",
-      "\006vendor\030\002 \001(\t\022\022\n\nresolution\030\003 \001(\002\022\r\n\005pow" +
-      "er\030\004 \001(\002\022\017\n\007version\030\005 \001(\005\022\014\n\004type\030\006 \001(\005\"" +
-      ".\n\021Lat_Long_Position\022\013\n\003lat\030\001 \001(\002\022\014\n\004lon" +
-      "g\030\002 \001(\002b\006proto3"
+      "\014 \001(\005\022\017\n\007azimuth\030\r \001(\002\"Z\n\017Position_Sampl" +
+      "e\022\032\n\022relative_timestamp\030\001 \001(\003\022\r\n\005mag_x\030\002" +
+      " \001(\002\022\r\n\005mag_y\030\003 \001(\002\022\r\n\005mag_z\030\004 \001(\002\"?\n\017Pr" +
+      "essure_Sample\022\032\n\022relative_timestamp\030\001 \001(" +
+      "\003\022\020\n\010pressure\030\002 \001(\002\"9\n\014Light_Sample\022\032\n\022r",
+      "elative_timestamp\030\001 \001(\003\022\r\n\005light\030\002 \001(\002\"\223" +
+      "\001\n\013GNSS_Sample\022\032\n\022relative_timestamp\030\001 \001" +
+      "(\003\022\020\n\010latitude\030\002 \001(\002\022\021\n\tlongitude\030\003 \001(\002\022" +
+      "\020\n\010altitude\030\004 \001(\002\022\020\n\010accuracy\030\005 \001(\002\022\r\n\005s" +
+      "peed\030\006 \001(\002\022\020\n\010provider\030\007 \001(\t\"G\n\013WiFi_Sam" +
+      "ple\022\032\n\022relative_timestamp\030\001 \001(\003\022\034\n\tmac_s" +
+      "cans\030\002 \003(\0132\t.Mac_Scan\"A\n\010Mac_Scan\022\032\n\022rel" +
+      "ative_timestamp\030\001 \001(\003\022\013\n\003mac\030\002 \001(\003\022\014\n\004rs" +
+      "si\030\003 \001(\005\"7\n\007AP_Data\022\013\n\003mac\030\001 \001(\003\022\014\n\004ssid" +
+      "\030\002 \001(\t\022\021\n\tfrequency\030\003 \001(\003\"m\n\013Sensor_Info",
+      "\022\014\n\004name\030\001 \001(\t\022\016\n\006vendor\030\002 \001(\t\022\022\n\nresolu" +
+      "tion\030\003 \001(\002\022\r\n\005power\030\004 \001(\002\022\017\n\007version\030\005 \001" +
+      "(\005\022\014\n\004type\030\006 \001(\005\".\n\021Lat_Long_Position\022\013\n" +
+      "\003lat\030\001 \001(\002\022\014\n\004long\030\002 \001(\002b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13368,7 +13494,7 @@ public final class Traj {
     internal_static_Motion_Sample_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Motion_Sample_descriptor,
-        new java.lang.String[] { "RelativeTimestamp", "AccX", "AccY", "AccZ", "GyrX", "GyrY", "GyrZ", "RotationVectorX", "RotationVectorY", "RotationVectorZ", "RotationVectorW", "StepCount", });
+        new java.lang.String[] { "RelativeTimestamp", "AccX", "AccY", "AccZ", "GyrX", "GyrY", "GyrZ", "RotationVectorX", "RotationVectorY", "RotationVectorZ", "RotationVectorW", "StepCount", "Azimuth", });
     internal_static_Position_Sample_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_Position_Sample_fieldAccessorTable = new

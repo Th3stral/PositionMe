@@ -66,6 +66,9 @@ message Motion_Sample {
 
     // Integer
     int32 step_count = 12;
+
+    // new attribute to store azimuth calculated from the rotation vector
+    float azimuth = 13;
 }
 
 message Position_Sample {

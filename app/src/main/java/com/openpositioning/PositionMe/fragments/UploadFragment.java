@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import android.os.Environment;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -55,16 +58,41 @@ public class UploadFragment extends Fragment {
      * Initialises new Server Communication instance with the context, and finds all the files that
      * match the trajectory naming scheme in local storage.
      */
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Get communication class
         serverCommunications = new ServerCommunications(getActivity());
-        // Load local trajectories
-        localTrajectories = Stream.of(getActivity().getFilesDir().listFiles((file, name) -> name.contains("trajectory_") && name.endsWith(".txt")))
+
+        // Determine the directory to load trajectory files from.
+        File trajectoriesDir = null;
+
+        // for android 13 or higher use dedicated external storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            trajectoriesDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (trajectoriesDir == null) {
+                trajectoriesDir = getActivity().getFilesDir();
+            }
+        } else { // for android 12 or lower use internal storage
+            trajectoriesDir = getActivity().getFilesDir();
+        }
+
+        localTrajectories = Stream.of(trajectoriesDir.listFiles((file, name) ->
+                        name.contains("trajectory_") && name.endsWith(".txt")))
                 .filter(file -> !file.isDirectory())
                 .collect(Collectors.toList());
     }
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        // Get communication class
+//        serverCommunications = new ServerCommunications(getActivity());
+//        // Load local trajectories
+//        localTrajectories = Stream.of(getActivity().getFilesDir().listFiles((file, name) -> name.contains("trajectory_") && name.endsWith(".txt")))
+//                .filter(file -> !file.isDirectory())
+//                .collect(Collectors.toList());
+//    }
 
     /**
      * {@inheritDoc}

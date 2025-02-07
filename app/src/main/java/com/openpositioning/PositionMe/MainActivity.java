@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.view.Menu;
@@ -254,8 +255,14 @@ public class MainActivity extends AppCompatActivity implements Observer {
             );
         }
         else{
-            // Check other permissions if present
-            askStoragePermission();
+            // Determine next step based on android version
+            // if android ver is lower than 13, check for storage permissions
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                askStoragePermission();
+            } else { // else skip storage permission check
+                askMotionPermissions();
+            }
+//            askStoragePermission();
         }
     }
 
@@ -368,7 +375,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
                         grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Permissions granted!", Toast.LENGTH_SHORT).show();
                     this.settings.edit().putBoolean("wifi", true).apply();
-                    askStoragePermission();
+                    // Check for storage permissions if android ver lower than 13
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        askStoragePermission();
+                    }
+//                    askStoragePermission();
                 }
                 else {
                     if(!settings.getBoolean("permanentDeny", false)) {
