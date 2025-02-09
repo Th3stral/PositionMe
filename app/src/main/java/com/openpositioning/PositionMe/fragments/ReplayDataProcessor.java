@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.io.Serializable;
 import java.util.Map;
 
 import com.google.protobuf.TextFormat;
@@ -25,6 +26,28 @@ import com.google.android.gms.maps.model.LatLng;
 import com.openpositioning.PositionMe.UtilFunctions;
 
 public class ReplayDataProcessor {
+
+
+    /**
+     * 这个子类用来携带 File 对象，便于在 Activity 或 Fragment 之间通过 Intent、Bundle 等方式传递
+     */
+    public static class ReplayFileData extends ReplayDataProcessor implements Serializable {
+        private static final long serialVersionUID = 1L;  // 序列化版本ID
+        private File file;
+
+        public ReplayFileData(File file) {
+            this.file = file;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public void setFile(File file) {
+            this.file = file;
+        }
+    }
+
     // A simple method to check if a file seems to be text.
     // This example returns false if a null byte is found.
     public static boolean isTextFile(String filePath) {
@@ -46,9 +69,11 @@ public class ReplayDataProcessor {
 
 
 //    public static void protoBinDecoder(String filePath) {
-    public static void protoDecoder(File file) {
+    public static Traj.Trajectory protoDecoder(File file) {
 //        String filePath_sf = filePath.toString();
         String filePath = file.getAbsolutePath();
+
+        Traj.Trajectory trajectory = null;
 
         if (isTextFile(filePath)) { // plain text format
             StringBuilder sb = new StringBuilder();
@@ -65,7 +90,7 @@ public class ReplayDataProcessor {
                 // Decrypt the text format data into the builder
 //                TextFormat.merge(sb.toString(), trajBuilder);
                 JsonFormat.parser().merge(sb.toString(), trajBuilder);
-                Traj.Trajectory trajectory = trajBuilder.build();
+                trajectory = trajBuilder.build();
 //                System.out.println("Decoded message: " + trajectory.toString()); // test line
                 trajProcessing(trajectory);
 //            } catch (TextFormat.ParseException e) {
@@ -78,12 +103,13 @@ public class ReplayDataProcessor {
 //            try (FileInputStream fis = new FileInputStream(file)) {
             try (FileInputStream fis = new FileInputStream(file)) {
                 // use the parseFrom() method of Traj.Trajectory to parse binary data
-                Traj.Trajectory trajectory = Traj.Trajectory.parseFrom(fis);
+                trajectory = Traj.Trajectory.parseFrom(fis);
 //                System.out.println("Decoded message: " + trajectory.toString()); // test line
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return trajectory;
     }
 
     public static float[] getStartLocation(Traj.Trajectory trajectory) {
