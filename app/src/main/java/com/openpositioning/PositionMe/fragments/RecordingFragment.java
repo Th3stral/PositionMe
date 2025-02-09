@@ -187,7 +187,7 @@ public class RecordingFragment extends Fragment {
             public void onMapReady(GoogleMap map) {
                 gMap=map;
                 //Initialising the indoor map manager object
-                indoorMapManager =new IndoorMapManager(map);
+                indoorMapManager = new IndoorMapManager(map);
                 // Setting map attributes
                 map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 map.getUiSettings().setCompassEnabled(true);
