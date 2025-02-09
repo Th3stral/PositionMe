@@ -14,6 +14,8 @@ import java.io.File;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Adapter used for displaying local Trajectory file data
@@ -69,7 +71,18 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadViewHolder> {
         Matcher dateMatcher = datePattern.matcher(uploadItems.get(position).getName());
         String dateString = dateMatcher.find() ? dateMatcher.group(1) : "N/A";
         System.err.println("UPLOAD - Date string: " + dateString);
-        holder.trajDate.setText(dateString);
+
+
+        // define input format
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yy-HH-mm-ss");
+        LocalDateTime dateTime = LocalDateTime.parse(dateString, inputFormatter);
+
+        // define output format
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // formatting into required string
+        String formattedDate = dateTime.format(outputFormatter);
+
+        holder.trajDate.setText(formattedDate);
 
         // Set click listener for the delete button
         holder.deletebutton.setOnClickListener(v -> deleteFileAtPosition(position));

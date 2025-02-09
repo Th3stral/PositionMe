@@ -27,7 +27,7 @@ public class UploadViewHolder extends RecyclerView.ViewHolder implements View.On
     ImageButton uploadButton;
     // Weak reference to the click listener to enable garbage collection on recyclerview items
     private WeakReference<DownloadClickListener> listenerReference;
-    public Button deletebutton;
+    public ImageButton deletebutton;
 
     /**
      * {@inheritDoc}
