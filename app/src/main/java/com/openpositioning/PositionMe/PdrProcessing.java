@@ -220,6 +220,9 @@ public class PdrProcessing {
      * @return                  float stride length in meters.
      */
     private float weibergMinMax(List<Double> accelMagnitude) {
+//        if (accelMagnitude == null || accelMagnitude.isEmpty()) {
+//            accelMagnitude.add(0.0);
+//        } else {                                                                                        // HERE HERE HERE HERE HERE HERE HERE HERE
         double maxAccel = Collections.max(accelMagnitude);
         double minAccel = Collections.min(accelMagnitude);
         float bounce = (float) Math.pow((maxAccel-minAccel), 0.25);
