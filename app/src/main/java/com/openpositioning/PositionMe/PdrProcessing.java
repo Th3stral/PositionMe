@@ -371,6 +371,8 @@ public class PdrProcessing {
         this.positionY = 0f;
         this.elevation = 0f;
 
+        this.setupIndex = 0; // to reset the elevation to 0, otherwise buffer would be full
+
         if(this.settings.getBoolean("overwrite_constants", false)) {
             // Capacity - pressure is read with 1Hz - store values of past 10 seconds
             this.elevationList = new CircularFloatBuffer(Integer.parseInt(settings.getString("elevation_seconds", "4")));

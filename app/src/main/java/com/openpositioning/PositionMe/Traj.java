@@ -5823,7 +5823,7 @@ public final class Traj {
 
     /**
      * <pre>
-     * ori
+     * new attribute to store azimuth calculated from the rotation vector
      * </pre>
      *
      * <code>optional float azimuth = 13;</code>
@@ -6102,7 +6102,7 @@ public final class Traj {
     private float azimuth_;
     /**
      * <pre>
-     * ori
+     * new attribute to store azimuth calculated from the rotation vector
      * </pre>
      *
      * <code>optional float azimuth = 13;</code>
@@ -6993,7 +6993,7 @@ public final class Traj {
       private float azimuth_ ;
       /**
        * <pre>
-       * ori
+       * new attribute to store azimuth calculated from the rotation vector
        * </pre>
        *
        * <code>optional float azimuth = 13;</code>
@@ -7003,7 +7003,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * ori
+       * new attribute to store azimuth calculated from the rotation vector
        * </pre>
        *
        * <code>optional float azimuth = 13;</code>
@@ -7016,7 +7016,7 @@ public final class Traj {
       }
       /**
        * <pre>
-       * ori
+       * new attribute to store azimuth calculated from the rotation vector
        * </pre>
        *
        * <code>optional float azimuth = 13;</code>
@@ -7741,6 +7741,15 @@ public final class Traj {
      * <code>optional float pressure = 2;</code>
      */
     float getPressure();
+
+    /**
+     * <pre>
+     * Estimated elevation in metres
+     * </pre>
+     *
+     * <code>optional float estimated_elevation = 3;</code>
+     */
+    float getEstimatedElevation();
   }
   /**
    * Protobuf type {@code Pressure_Sample}
@@ -7756,6 +7765,7 @@ public final class Traj {
     private Pressure_Sample() {
       relativeTimestamp_ = 0L;
       pressure_ = 0F;
+      estimatedElevation_ = 0F;
     }
 
     @java.lang.Override
@@ -7791,6 +7801,11 @@ public final class Traj {
             case 21: {
 
               pressure_ = input.readFloat();
+              break;
+            }
+            case 29: {
+
+              estimatedElevation_ = input.readFloat();
               break;
             }
           }
@@ -7838,6 +7853,19 @@ public final class Traj {
       return pressure_;
     }
 
+    public static final int ESTIMATED_ELEVATION_FIELD_NUMBER = 3;
+    private float estimatedElevation_;
+    /**
+     * <pre>
+     * Estimated elevation in metres
+     * </pre>
+     *
+     * <code>optional float estimated_elevation = 3;</code>
+     */
+    public float getEstimatedElevation() {
+      return estimatedElevation_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -7856,6 +7884,9 @@ public final class Traj {
       if (pressure_ != 0F) {
         output.writeFloat(2, pressure_);
       }
+      if (estimatedElevation_ != 0F) {
+        output.writeFloat(3, estimatedElevation_);
+      }
     }
 
     public int getSerializedSize() {
@@ -7870,6 +7901,10 @@ public final class Traj {
       if (pressure_ != 0F) {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(2, pressure_);
+      }
+      if (estimatedElevation_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(3, estimatedElevation_);
       }
       memoizedSize = size;
       return size;
@@ -7893,6 +7928,10 @@ public final class Traj {
           java.lang.Float.floatToIntBits(getPressure())
           == java.lang.Float.floatToIntBits(
               other.getPressure()));
+      result = result && (
+          java.lang.Float.floatToIntBits(getEstimatedElevation())
+          == java.lang.Float.floatToIntBits(
+              other.getEstimatedElevation()));
       return result;
     }
 
@@ -7909,6 +7948,9 @@ public final class Traj {
       hash = (37 * hash) + PRESSURE_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getPressure());
+      hash = (37 * hash) + ESTIMATED_ELEVATION_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getEstimatedElevation());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -8031,6 +8073,8 @@ public final class Traj {
 
         pressure_ = 0F;
 
+        estimatedElevation_ = 0F;
+
         return this;
       }
 
@@ -8055,6 +8099,7 @@ public final class Traj {
         Traj.Pressure_Sample result = new Traj.Pressure_Sample(this);
         result.relativeTimestamp_ = relativeTimestamp_;
         result.pressure_ = pressure_;
+        result.estimatedElevation_ = estimatedElevation_;
         onBuilt();
         return result;
       }
@@ -8101,6 +8146,9 @@ public final class Traj {
         }
         if (other.getPressure() != 0F) {
           setPressure(other.getPressure());
+        }
+        if (other.getEstimatedElevation() != 0F) {
+          setEstimatedElevation(other.getEstimatedElevation());
         }
         onChanged();
         return this;
@@ -8188,6 +8236,44 @@ public final class Traj {
       public Builder clearPressure() {
         
         pressure_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private float estimatedElevation_ ;
+      /**
+       * <pre>
+       * Estimated elevation in metres
+       * </pre>
+       *
+       * <code>optional float estimated_elevation = 3;</code>
+       */
+      public float getEstimatedElevation() {
+        return estimatedElevation_;
+      }
+      /**
+       * <pre>
+       * Estimated elevation in metres
+       * </pre>
+       *
+       * <code>optional float estimated_elevation = 3;</code>
+       */
+      public Builder setEstimatedElevation(float value) {
+        
+        estimatedElevation_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Estimated elevation in metres
+       * </pre>
+       *
+       * <code>optional float estimated_elevation = 3;</code>
+       */
+      public Builder clearEstimatedElevation() {
+        
+        estimatedElevation_ = 0F;
         onChanged();
         return this;
       }
@@ -13447,23 +13533,24 @@ public final class Traj {
       "\n\021rotation_vector_w\030\013 \001(\002\022\022\n\nstep_count\030" +
       "\014 \001(\005\022\017\n\007azimuth\030\r \001(\002\"Z\n\017Position_Sampl" +
       "e\022\032\n\022relative_timestamp\030\001 \001(\003\022\r\n\005mag_x\030\002" +
-      " \001(\002\022\r\n\005mag_y\030\003 \001(\002\022\r\n\005mag_z\030\004 \001(\002\"?\n\017Pr" +
+      " \001(\002\022\r\n\005mag_y\030\003 \001(\002\022\r\n\005mag_z\030\004 \001(\002\"\\\n\017Pr" +
       "essure_Sample\022\032\n\022relative_timestamp\030\001 \001(" +
-      "\003\022\020\n\010pressure\030\002 \001(\002\"9\n\014Light_Sample\022\032\n\022r",
-      "elative_timestamp\030\001 \001(\003\022\r\n\005light\030\002 \001(\002\"\223" +
-      "\001\n\013GNSS_Sample\022\032\n\022relative_timestamp\030\001 \001" +
-      "(\003\022\020\n\010latitude\030\002 \001(\002\022\021\n\tlongitude\030\003 \001(\002\022" +
-      "\020\n\010altitude\030\004 \001(\002\022\020\n\010accuracy\030\005 \001(\002\022\r\n\005s" +
-      "peed\030\006 \001(\002\022\020\n\010provider\030\007 \001(\t\"G\n\013WiFi_Sam" +
-      "ple\022\032\n\022relative_timestamp\030\001 \001(\003\022\034\n\tmac_s" +
-      "cans\030\002 \003(\0132\t.Mac_Scan\"A\n\010Mac_Scan\022\032\n\022rel" +
-      "ative_timestamp\030\001 \001(\003\022\013\n\003mac\030\002 \001(\003\022\014\n\004rs" +
-      "si\030\003 \001(\005\"7\n\007AP_Data\022\013\n\003mac\030\001 \001(\003\022\014\n\004ssid" +
-      "\030\002 \001(\t\022\021\n\tfrequency\030\003 \001(\003\"m\n\013Sensor_Info",
-      "\022\014\n\004name\030\001 \001(\t\022\016\n\006vendor\030\002 \001(\t\022\022\n\nresolu" +
-      "tion\030\003 \001(\002\022\r\n\005power\030\004 \001(\002\022\017\n\007version\030\005 \001" +
-      "(\005\022\014\n\004type\030\006 \001(\005\".\n\021Lat_Long_Position\022\013\n" +
-      "\003lat\030\001 \001(\002\022\014\n\004long\030\002 \001(\002b\006proto3"
+      "\003\022\020\n\010pressure\030\002 \001(\002\022\033\n\023estimated_elevati",
+      "on\030\003 \001(\002\"9\n\014Light_Sample\022\032\n\022relative_tim" +
+      "estamp\030\001 \001(\003\022\r\n\005light\030\002 \001(\002\"\223\001\n\013GNSS_Sam" +
+      "ple\022\032\n\022relative_timestamp\030\001 \001(\003\022\020\n\010latit" +
+      "ude\030\002 \001(\002\022\021\n\tlongitude\030\003 \001(\002\022\020\n\010altitude" +
+      "\030\004 \001(\002\022\020\n\010accuracy\030\005 \001(\002\022\r\n\005speed\030\006 \001(\002\022" +
+      "\020\n\010provider\030\007 \001(\t\"G\n\013WiFi_Sample\022\032\n\022rela" +
+      "tive_timestamp\030\001 \001(\003\022\034\n\tmac_scans\030\002 \003(\0132" +
+      "\t.Mac_Scan\"A\n\010Mac_Scan\022\032\n\022relative_times" +
+      "tamp\030\001 \001(\003\022\013\n\003mac\030\002 \001(\003\022\014\n\004rssi\030\003 \001(\005\"7\n" +
+      "\007AP_Data\022\013\n\003mac\030\001 \001(\003\022\014\n\004ssid\030\002 \001(\t\022\021\n\tf",
+      "requency\030\003 \001(\003\"m\n\013Sensor_Info\022\014\n\004name\030\001 " +
+      "\001(\t\022\016\n\006vendor\030\002 \001(\t\022\022\n\nresolution\030\003 \001(\002\022" +
+      "\r\n\005power\030\004 \001(\002\022\017\n\007version\030\005 \001(\005\022\014\n\004type\030" +
+      "\006 \001(\005\".\n\021Lat_Long_Position\022\013\n\003lat\030\001 \001(\002\022" +
+      "\014\n\004long\030\002 \001(\002b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13506,7 +13593,7 @@ public final class Traj {
     internal_static_Pressure_Sample_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Pressure_Sample_descriptor,
-        new java.lang.String[] { "RelativeTimestamp", "Pressure", });
+        new java.lang.String[] { "RelativeTimestamp", "Pressure", "EstimatedElevation", });
     internal_static_Light_Sample_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_Light_Sample_fieldAccessorTable = new

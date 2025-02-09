@@ -9,7 +9,7 @@ import android.os.Looper;
 import android.widget.Toast;
 
 import android.os.Environment;
-import java.nio.file.Files;  // 注意：需要 API 26+
+import java.nio.file.Files;
 import android.os.Build;
 
 
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
 
 import okhttp3.Call;
 import okhttp3.Headers;
@@ -41,6 +42,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+
 
 /**
  * This class handles communications with the server through HTTPs. The class uses an
@@ -147,7 +149,7 @@ public class ServerCommunications implements Observable {
         checkNetworkStatus();
 
         // Check if user preference allows for syncing with mobile data
-        // TODO: add sync delay and enforce settings
+        // ODO: add sync delay and enforce settings
         boolean enableMobileData = this.settings.getBoolean("mobile_sync", false);
         // Check if device is connected to WiFi or to mobile data with enabled preference
         if(this.isWifiConn || (enableMobileData && isMobileConn)) {
@@ -477,15 +479,24 @@ public class ServerCommunications implements Observable {
 //        });
 //    }
 
+
+    /**
+     * Callback interface for handling the result of a download operation.
+     */
+    public interface DownloadResultCallback {
+        void onResult(boolean success);
+    }
+
+
     /**
      * Perform API request for downloading a Trajectory uploaded to the server. The trajectory is
-     * retrieved from a zip file, with the method accepting a position argument specifying the
+     * retrieved from a zip file, with the method accepting an id argument specifying the
      * trajectory to be downloaded. The trajectory is then converted to a protobuf object and
      * then to a JSON string to be downloaded to the device's Downloads folder.
      *
-     * @param position the position of the trajectory in the zip file to retrieve
+     * @param id the id of the trajectory to be downloaded
      */
-    public void downloadTrajectory(int position) {
+    public void downloadTrajectory(int id, DownloadResultCallback callback) {
         // Initialise OkHttp client
         OkHttpClient client = new OkHttpClient();
 
@@ -496,91 +507,107 @@ public class ServerCommunications implements Observable {
                 .get()
                 .build();
 
-        // Enqueue the GET request for asynchronous execution
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+                // Notify failure on callback (remember to run on UI thread if needed)
+                if (callback != null) {
+                    callback.onResult(false);
+                }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+                boolean success = false;
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful())
                         throw new IOException("Unexpected code " + response);
 
+                    // Set target file name
+                    String targetFileName = id + ".pkt";
+
                     // Create input streams to process the response
                     InputStream inputStream = responseBody.byteStream();
                     ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+                    ZipEntry zipEntry;
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    boolean fileFound = false;
 
-                    // Get the nth entry in the zip file
-                    java.util.zip.ZipEntry zipEntry;
-                    int zipCount = 0;
+                    // Search for the target file in the zip archive
                     while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                        if (zipCount == position) {
-                            // break if zip entry position matches the desired position
+                        if (zipEntry.getName().equals(targetFileName)) {
+                            fileFound = true;
+                            byte[] buffer = new byte[1024];
+                            int bytesRead;
+                            while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+                                byteArrayOutputStream.write(buffer, 0, bytesRead);
+                            }
                             break;
                         }
-                        zipCount++;
                     }
 
-                    // Initialise a byte array output stream
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-                    // Read the zipped data and write it to the byte array output stream
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = zipInputStream.read(buffer)) != -1) {
-                        byteArrayOutputStream.write(buffer, 0, bytesRead);
+                    // Check if the target file was found
+                    if (!fileFound) {
+                        System.err.println("File not found: " + targetFileName);
+                        return; // Exit the method if the file is not found
                     }
 
-                    // Convert the byte array to a protobuf object
+                    // Convert to protobuf and then to JSON string
                     byte[] byteArray = byteArrayOutputStream.toByteArray();
                     Traj.Trajectory receivedTrajectory = Traj.Trajectory.parseFrom(byteArray);
-
-                    // Convert the protobuf object to a string
                     JsonFormat.Printer printer = JsonFormat.printer();
                     String receivedTrajectoryString = printer.print(receivedTrajectory);
-                    System.out.println("Successful download: "
-                            + receivedTrajectoryString.substring(0, 100));
+                    System.out.println("Successful download: " + receivedTrajectoryString.substring(0, 100));
 
-                    // =============== modify file access part start ===============
-//                    File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    // Determine storage directory (for Android versions)
                     File storageDir = null;
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        // for android 13 or higher, use getExternalFilesDir to access the designated downloads folder
                         storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
                         if (storageDir == null) {
                             storageDir = context.getFilesDir();
                         }
-                    } else { // for android 12 or lower, use getFilesDir to access the internal storage
+                    } else {
                         storageDir = context.getFilesDir();
                     }
-
                     File file = new File(storageDir, "received_trajectory.txt");
-                    // =============== modify file access part end ===============
 
-                    // save the received trajectory to a file in the Downloads folder
+                    // Write the downloaded data to a file
                     try (FileWriter fileWriter = new FileWriter(file)) {
                         fileWriter.write(receivedTrajectoryString);
                         fileWriter.flush();
-                        System.err.println("Received trajectory stored in: " + storageDir.getAbsolutePath());
+                        System.out.println("Received trajectory stored in: " + storageDir.getAbsolutePath());
+
+                        // === Test decoding of received trajectory start ===
+                        try {
+                            ReplayDataProcessor.protoDecoder(file);
+                        } catch (Exception e) {
+                            System.err.println("Error decoding received trajectory");
+                        }
+                        // === Test decoding of received trajectory end ===
+
+                        success = true;// Set success to true
                     } catch (IOException ee) {
                         System.err.println("Trajectory download failed");
                     } finally {
-                        // Close all streams and entries to release resources
                         zipInputStream.closeEntry();
                         byteArrayOutputStream.close();
                         zipInputStream.close();
                         inputStream.close();
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    // Notify the callback of the result
+                    if (callback != null) {
+                        callback.onResult(success);
+                    }
                 }
             }
         });
     }
-
-//    public void downloadTrajectory(int position) {
+//
+//    public void downloadTrajectory(int id) {
 //        // Initialise OkHttp client
 //        OkHttpClient client = new OkHttpClient();
 //
@@ -593,38 +620,45 @@ public class ServerCommunications implements Observable {
 //
 //        // Enqueue the GET request for asynchronous execution
 //        client.newCall(request).enqueue(new okhttp3.Callback() {
-//            @Override public void onFailure(Call call, IOException e) {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
 //                e.printStackTrace();
 //            }
 //
-//            @Override public void onResponse(Call call, Response response) throws IOException {
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
 //                try (ResponseBody responseBody = response.body()) {
-//                    if (!response.isSuccessful()) throw new IOException("Unexpected code "
-//                            + response);
+//                    if (!response.isSuccessful())
+//                        throw new IOException("Unexpected code " + response);
 //
-//                    // Create input streams to process the response
+//                    // target file name
+//                    String targetFileName = id + ".pkt";
+//
+//                    // create input streams to process the response
 //                    InputStream inputStream = responseBody.byteStream();
 //                    ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+//                    ZipEntry zipEntry;
 //
-//                    // Get the nth entry in the zip file
-//                    java.util.zip.ZipEntry zipEntry;
-//                    int zipCount = 0;
+//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                    boolean fileFound = false;
+//
 //                    while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-//                        if (zipCount == position) {
-//                            // break if zip entry position matches the desired position
-//                            break;
+//                        if (zipEntry.getName().equals(targetFileName)) {
+//                            fileFound = true;
+//                            byte[] buffer = new byte[1024];
+//                            int bytesRead;
+//                            while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+//                                byteArrayOutputStream.write(buffer, 0, bytesRead);
+//                            }
+//                            break; // stop searching if file is found
 //                        }
-//                        zipCount++;
 //                    }
 //
-//                    // Initialise a byte array output stream
-//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                    zipInputStream.close();
 //
-//                    // Read the zipped data and write it to the byte array output stream
-//                    byte[] buffer = new byte[1024];
-//                    int bytesRead;
-//                    while ((bytesRead = zipInputStream.read(buffer)) != -1) {
-//                        byteArrayOutputStream.write(buffer, 0, bytesRead);
+//                    if (!fileFound) {
+//                        System.err.println("File not found: " + targetFileName);
+//                        return;
 //                    }
 //
 //                    // Convert the byte array to a protobuf object
@@ -637,23 +671,33 @@ public class ServerCommunications implements Observable {
 //                    System.out.println("Successful download: "
 //                            + receivedTrajectoryString.substring(0, 100));
 //
-//                    // Save the received trajectory to a file in the Downloads folder
-//                    //String storagePath = Environment.getExternalStoragePublicDirectory(Environment
-//                           // .DIRECTORY_DOWNLOADS).toString();
-//                    String storagePath = context.getFilesDir().toString();
+//                    // =============== modify file access part start ===============
+////                    File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+//                    File storageDir = null;
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                        // for android 13 or higher, use getExternalFilesDir to access the designated downloads folder
+//                        storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+//                        if (storageDir == null) {
+//                            storageDir = context.getFilesDir();
+//                        }
+//                    } else { // for android 12 or lower, use getFilesDir to access the internal storage
+//                        storageDir = context.getFilesDir();
+//                    }
+//                    // =============== modify file access part end ===============
 //
-//                    File file = new File(storagePath, "received_trajectory.txt");
+//                    File file = new File(storageDir, "received_trajectory.txt");
 //
-////                    // server fetched data decoding test
-////                    try {
-////                        ReplayDataProcessor.protoDecoder(file);
-////                    } catch (Exception e) {
-////                        System.err.println("Error decoding received trajectory");
-////                    }
+//                    // save the received trajectory to a file in the Downloads folder
 //                    try (FileWriter fileWriter = new FileWriter(file)) {
 //                        fileWriter.write(receivedTrajectoryString);
 //                        fileWriter.flush();
-//                        System.err.println("Received trajectory stored in: " + storagePath);
+//                        System.out.println("Received trajectory stored in: " + storageDir.getAbsolutePath());
+//                        // server fetched data decoding test
+//                        try {
+//                            ReplayDataProcessor.protoDecoder(file);
+//                        } catch (Exception e) {
+//                            System.err.println("Error decoding received trajectory");
+//                        }
 //                    } catch (IOException ee) {
 //                        System.err.println("Trajectory download failed");
 //                    } finally {
@@ -666,7 +710,6 @@ public class ServerCommunications implements Observable {
 //                }
 //            }
 //        });
-//
 //    }
 
     /**
@@ -702,6 +745,7 @@ public class ServerCommunications implements Observable {
                     infoResponse =  responseBody.string();
                     // Print a message in the console and notify observers
                     System.out.println("Response received");
+                    System.out.println(infoResponse);
                     notifyObservers(0);
                 }
             }

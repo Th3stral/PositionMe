@@ -898,7 +898,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                     .setRotationVectorY(rotation[1])
                     .setRotationVectorZ(rotation[2])
                     .setRotationVectorW(rotation[3])
-                    .setStepCount(stepCounter)
+                    .setStepCount(stepCounter) // seems int value 0 won't be explicitly saved
                     .setAzimuth(orientation[0])) // new attribute to store azimuth of user
 //                    .setStepCount(stepCounter))
 
@@ -915,6 +915,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                 if (barometerSensor.sensor != null) {
                     trajectory.addPressureData(Traj.Pressure_Sample.newBuilder()
                                     .setPressure(pressure)
+                                    .setEstimatedElevation(elevation)
                                     .setRelativeTimestamp(android.os.SystemClock.uptimeMillis() - bootTime))
                             .addLightData(Traj.Light_Sample.newBuilder()
                                     .setLight(light)

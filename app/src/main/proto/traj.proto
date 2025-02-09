@@ -86,7 +86,10 @@ message Pressure_Sample {
     // mbar
     float pressure = 2;
 
+    // Estimated elevation in metres
+    float estimated_elevation = 3;
 }
+
 message Light_Sample {
     int64 relative_timestamp = 1;
     // lux
