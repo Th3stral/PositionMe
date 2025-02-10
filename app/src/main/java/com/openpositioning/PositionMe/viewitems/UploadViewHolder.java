@@ -55,7 +55,7 @@ public class UploadViewHolder extends RecyclerView.ViewHolder implements View.On
         this.replaybutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // 点击回放按钮时回调
+                // call when the replay button is pressed
                 if (listenerReference.get() != null) {
                     listenerReference.get().onReplayClicked(getAdapterPosition());
                 }

@@ -72,7 +72,7 @@ public class ReplayTrajFragment extends Fragment {
     private ImageButton playPauseButton;
     private ImageButton goToEndButton;
 
-    private boolean isPlaying = true;          //判断是否在播放/播放结束
+    private boolean isPlaying = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -121,7 +121,8 @@ public class ReplayTrajFragment extends Fragment {
                                 .zIndex(1f));
                         PolylineOptions polylineOptions=new PolylineOptions()
                                 .color(Color.RED)
-                                .add(currentLocation);
+                                .add(currentLocation)
+                                .zIndex(1f);
                         polyline = replayMap.addPolyline(polylineOptions);
                         //Center the camera
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, (float) 19f));
