@@ -294,10 +294,10 @@ public class FilesFragment extends Fragment implements Observer {
                                 }
 
                                 Toast.makeText(getContext(), "file downloaded, initiating replay", Toast.LENGTH_SHORT).show();
-                                ReplayDataProcessor.GlobalSingletonChild replayProcessor =
-                                        ReplayDataProcessor.GlobalSingletonChild.getInstance();
+                                ReplayDataProcessor.TrajRecorder replayTraj =
+                                        ReplayDataProcessor.TrajRecorder.getInstance();
 
-                                replayProcessor.setReplayFile(trajectory);
+                                replayTraj.setReplayFile(trajectory);
 
                                 NavDirections action = FilesFragmentDirections.actionFilesFragmentToReplayTrajFragment();
                                 Navigation.findNavController(view).navigate(action);

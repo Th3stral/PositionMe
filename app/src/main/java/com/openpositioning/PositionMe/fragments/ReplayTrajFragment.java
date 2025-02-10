@@ -52,7 +52,7 @@ public class ReplayTrajFragment extends Fragment {
     private Traj.Trajectory trajectory;
     private int trajSize;
 
-    private ReplayDataProcessor.GlobalSingletonChild trajProcessor;
+    private ReplayDataProcessor.TrajRecorder trajProcessor;
 
     private List<LatLng> pdrLocList;
     private List<Traj.Motion_Sample> imuDataList;
@@ -77,7 +77,7 @@ public class ReplayTrajFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.trajProcessor = ReplayDataProcessor.GlobalSingletonChild.getInstance();
+        this.trajProcessor = ReplayDataProcessor.TrajRecorder.getInstance();
         this.trajectory = trajProcessor.getReplayTraj();
         readPdrTimer = new Timer();
     }

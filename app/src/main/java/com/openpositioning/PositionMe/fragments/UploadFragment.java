@@ -173,8 +173,8 @@ public class UploadFragment extends Fragment {
                         return;
                     }
 
-                    ReplayDataProcessor.GlobalSingletonChild replayProcessor =
-                            ReplayDataProcessor.GlobalSingletonChild.getInstance();
+                    ReplayDataProcessor.TrajRecorder replayProcessor =
+                            ReplayDataProcessor.TrajRecorder.getInstance();
 
                     replayProcessor.setReplayFile(trajectory);
 

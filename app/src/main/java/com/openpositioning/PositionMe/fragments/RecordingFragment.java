@@ -207,7 +207,8 @@ public class RecordingFragment extends Fragment {
                 // Adding polyline to map to plot real-time trajectory
                 PolylineOptions polylineOptions=new PolylineOptions()
                         .color(Color.RED)
-                        .add(currentLocation);
+                        .add(currentLocation)
+                        .zIndex(1f);
                 polyline = gMap.addPolyline(polylineOptions);
                 // Setting current location to set Ground Overlay for indoor map (if in building)
                 indoorMapManager.setCurrentLocation(currentLocation);

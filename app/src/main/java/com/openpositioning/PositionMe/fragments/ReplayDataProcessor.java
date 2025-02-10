@@ -28,28 +28,20 @@ import com.openpositioning.PositionMe.UtilFunctions;
 public class ReplayDataProcessor {
 
 
-    public static class GlobalSingletonChild extends ReplayDataProcessor {
+    public static class TrajRecorder extends ReplayDataProcessor {
+        private static final TrajRecorder INSTANCE = new TrajRecorder();
 
-        // ========== 1. 静态单例 ==========
-        private static final GlobalSingletonChild INSTANCE = new GlobalSingletonChild();
-
-        // 私有构造函数，禁止外部 new
-        private GlobalSingletonChild() {
+        private TrajRecorder() {
         }
 
-        public static GlobalSingletonChild getInstance() {
+        public static TrajRecorder getInstance() {
             return INSTANCE;
         }
 
-        // ========== 2. 你想要共享的数据字段 ==========
         private Traj.Trajectory replayTraj;
 
-        // 也可以存放其他数据，比如轨迹、某些状态等
         private final List<String> trajectoryPoints = new ArrayList<>();
-        // 或者 public final List<LatLng> trajectoryPoints = new ArrayList<>();
-        //    （如果你的轨迹用 LatLng 来表示）
 
-        // ========== 3. 对外的 get/set 方法 ==========
         public Traj.Trajectory getReplayTraj() {
             return replayTraj;
         }
