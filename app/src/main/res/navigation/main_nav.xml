@@ -110,12 +110,25 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_filesFragment_to_ReplayTrajFragment"
+            app:destination="@id/ReplayTrajFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popExitAnim="@anim/slide_in_right" />
     </fragment><action android:id="@+id/action_global_correctionFragment" app:destination="@id/correctionFragment"/>
     <fragment
         android:id="@+id/uploadFragment"
         android:name="com.openpositioning.PositionMe.fragments.UploadFragment"
         android:label="fragment_upload"
-        tools:layout="@layout/fragment_upload" />
+        tools:layout="@layout/fragment_upload" >
+        <action
+            android:id="@+id/action_uploadFragment_to_ReplayTrajFragment"
+            app:destination="@id/ReplayTrajFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@animator/nav_default_exit_anim"
+            app:popExitAnim="@anim/slide_in_right" />
+    </fragment>
     <action
         android:id="@+id/action_global_settingsFragment"
         app:destination="@id/settingsFragment"
@@ -123,4 +136,10 @@
         app:exitAnim="@anim/slide_out_bottom"
         app:popEnterAnim="@anim/slide_in_bottom"
         app:popExitAnim="@anim/slide_in_top" />
+    <fragment
+        android:id="@+id/ReplayTrajFragment"
+        android:name="com.openpositioning.PositionMe.fragments.ReplayTrajFragment"
+        android:label="fragment_replay"
+        tools:layout="@layout/fragment_replay" />
+
 </navigation>

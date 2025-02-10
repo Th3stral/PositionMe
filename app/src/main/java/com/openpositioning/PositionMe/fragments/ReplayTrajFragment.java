@@ -35,6 +35,8 @@ public class ReplayTrajFragment extends Fragment {
     // For initialize map to replay with indoor map
     private GoogleMap replayMap;
     public IndoorMapManager indoorMapManager;
+
+//    public ReplayDataProcessor ReplayDataProcessor;
     private LatLng start;
     private Polyline polyline;
     private LatLng currentLocation;
@@ -47,7 +49,7 @@ public class ReplayTrajFragment extends Fragment {
     private Traj.Trajectory trajectory;
     private int trajSize;
 
-    // data input
+
     private List<LatLng> pdrLocList;
     private List<Traj.Motion_Sample> imuDataList;
     private List<Traj.Pressure_Sample> pressureSampleList;
@@ -59,7 +61,6 @@ public class ReplayTrajFragment extends Fragment {
     private int counterYawLimit = 0;
     private float currElev;
 
-    // fragment components
     private SeekBar seekBar;
     private ImageButton replayButton;
     private ImageButton replayBackButton;
@@ -77,8 +78,8 @@ public class ReplayTrajFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_replay, container, false);
-        this.trajectory = processing.decodexx(File file);
-        pdrLocList = processing.getPdrLoc(this.trajectory);
+        this.trajectory = ReplayDataProcessor.protoDecoder(file);
+        pdrLocList = ReplayDataProcessor.getPdrLoc(this.trajectory);
         imuDataList = this.trajectory.getImuDataList();
         pressureSampleList = this.trajectory.getPressureDataList();
         trajSize = imuDataList.size();
@@ -239,8 +240,6 @@ public class ReplayTrajFragment extends Fragment {
         replayBackButton.setOnClickListener(view -> {
             if (requireActivity().getSupportFragmentManager().getBackStackEntryCount() > 0) {
                 requireActivity().getSupportFragmentManager().popBackStack();
-            } else {
-                requireActivity().finish();
             }
         });
     }
