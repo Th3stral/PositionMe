@@ -75,7 +75,7 @@ public class ReplayTrajFragment extends Fragment {
     private ImageButton playPauseButton;
     private ImageButton goToEndButton;
 
-    private boolean isPlaying = true;          //判断是否在播放/播放结束
+    private boolean isPlaying = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

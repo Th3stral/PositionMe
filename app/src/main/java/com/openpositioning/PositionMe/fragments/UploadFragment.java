@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import android.os.Environment;
 import android.os.Build;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -156,13 +157,21 @@ public class UploadFragment extends Fragment {
 
                 @Override
                 public void onReplayClicked(int position) {
-                    // 这里是“回放”按钮的逻辑
+                    // replay button logic
                     File replayFile = localTrajectories.get(position);
 
-                    // 以文件路径作为参数，传递给 ReplayTrajFragment
-                    String filePath = replayFile.getAbsolutePath();
+//                    String filePath = replayFile.getAbsolutePath();
+                    if (replayFile == null) {
+                        Toast.makeText(getContext(), "Trajectory file not found, cannot invoke replay!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     Traj.Trajectory trajectory = ReplayDataProcessor.protoDecoder(replayFile);
+
+                    if (trajectory == null) {
+                        Toast.makeText(getContext(), "Trajectory empty, cannot invoke replay!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     ReplayDataProcessor.GlobalSingletonChild replayProcessor =
                             ReplayDataProcessor.GlobalSingletonChild.getInstance();
@@ -172,16 +181,6 @@ public class UploadFragment extends Fragment {
                     NavDirections action = UploadFragmentDirections.actionUploadFragmentToReplayTrajFragment();
                     Navigation.findNavController(view).navigate(action);
 
-
-//                    // 打开 ReplayTrajFragment，并传递参数
-//                    // 假设我们在 ReplayTrajFragment 里实现了一个 newInstance 工厂方法
-//                    ReplayTrajFragment fragment = ReplayTrajFragment.newInstance(filePath);
-//
-//                    // 启动 Fragment 替换
-//                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-//                    transaction.replace(R.id.main_container, fragment);
-//                    transaction.addToBackStack(null);   // 可选：让用户能按返回键回到当前界面
-//                    transaction.commit();
                 }
             });
             uploadList.setAdapter(listAdapter);
