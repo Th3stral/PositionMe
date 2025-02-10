@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import android.os.Environment;
 import android.os.Build;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -160,8 +161,17 @@ public class UploadFragment extends Fragment {
                     File replayFile = localTrajectories.get(position);
 
 //                    String filePath = replayFile.getAbsolutePath();
+                    if (replayFile == null) {
+                        Toast.makeText(getContext(), "Trajectory file not found, cannot invoke replay!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     Traj.Trajectory trajectory = ReplayDataProcessor.protoDecoder(replayFile);
+
+                    if (trajectory == null) {
+                        Toast.makeText(getContext(), "Trajectory empty, cannot invoke replay!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     ReplayDataProcessor.GlobalSingletonChild replayProcessor =
                             ReplayDataProcessor.GlobalSingletonChild.getInstance();

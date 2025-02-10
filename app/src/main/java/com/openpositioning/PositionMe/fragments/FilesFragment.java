@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -271,11 +273,27 @@ public class FilesFragment extends Fragment implements Observer {
 //                                                startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)))
 //                                        .setIcon(R.drawable.ic_baseline_download_24)
 //                                        .show();
-                                File localFile = new File(requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "received_trajectory" + ".txt");
+                                // Determine storage directory (for Android versions)
+                                File storageDir = null;
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                                    if (storageDir == null) {
+                                        storageDir = requireContext().getFilesDir();
+                                    }
+                                } else {
+                                    storageDir = requireContext().getFilesDir();
+                                }
+                                File localFile = new File(storageDir, "received_trajectory" + ".txt");
                                 String path = localFile.getAbsolutePath();
-                                Traj.Trajectory trajectory = ReplayDataProcessor.protoDecoder(localFile);
                                 System.out.println("Replaying trajectory with path: " + path);
+                                Traj.Trajectory trajectory = ReplayDataProcessor.protoDecoder(localFile);
+                                if (trajectory == null) {
+                                    System.out.println("Replaying failed");
+                                    Toast.makeText(getContext(), "Trajectory empty, cannot invoke replay!", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
 
+                                Toast.makeText(getContext(), "file downloaded, initiating replay", Toast.LENGTH_SHORT).show();
                                 ReplayDataProcessor.GlobalSingletonChild replayProcessor =
                                         ReplayDataProcessor.GlobalSingletonChild.getInstance();
 
