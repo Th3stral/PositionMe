@@ -194,52 +194,52 @@ public class FilesFragment extends Fragment implements Observer {
         filesList.setLayoutManager(manager);
         filesList.setHasFixedSize(true);
 
-        listAdapter = new TrajDownloadListAdapter(getActivity(), entryList, position -> {
-            System.out.println("Position: " + position);
-            Map targetFile = entryList.get(position);
-            int id = Integer.parseInt(targetFile.get("id").toString());
-
-            // Create and show a progress dialog using AlertDialog
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle("Downloading");
-            builder.setMessage("Please wait while the trajectory is being downloaded...");
-            builder.setCancelable(false); // Prevent user from dismissing the dialog manually
-
-            AlertDialog progressDialog = builder.create();
-            progressDialog.show(); // Show the progress dialog
-
-            // Call downloadTrajectory with a callback
-            serverCommunications.downloadTrajectory(id, new ServerCommunications.DownloadResultCallback() {
-                @Override
-                public void onResult(boolean success) {
-                    // Run UI updates on the main thread
-                    getActivity().runOnUiThread(() -> {
-                        // Dismiss the progress dialog now that the download is complete
-                        progressDialog.dismiss();
-
-                        // Show the appropriate dialog based on the download result
-                        if (success) { // If the download was successful
-                            new AlertDialog.Builder(getContext())
-                                    .setTitle("File downloaded")
-                                    .setMessage("Trajectory downloaded to local storage")
-                                    .setPositiveButton(R.string.ok, null)
-                                    .setNegativeButton(R.string.show_storage, (dialog, which) ->
-                                            startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)))
-                                    .setIcon(R.drawable.ic_baseline_download_24)
-                                    .show();
-                        } else { // If the download failed
-                            new AlertDialog.Builder(getContext())
-                                    .setTitle("Download Failed")
-                                    .setMessage("Trajectory download failed. Please try again.")
-                                    .setPositiveButton(R.string.ok, null)
-                                    .show();
-                        }
-                    });
-                }
-            });
-        });
-
-        filesList.setAdapter(listAdapter);
+//        listAdapter = new TrajDownloadListAdapter(getActivity(), entryList, position -> {
+//            System.out.println("Position: " + position);
+//            Map targetFile = entryList.get(position);
+//            int id = Integer.parseInt(targetFile.get("id").toString());
+//
+//            // Create and show a progress dialog using AlertDialog
+//            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//            builder.setTitle("Downloading");
+//            builder.setMessage("Please wait while the trajectory is being downloaded...");
+//            builder.setCancelable(false); // Prevent user from dismissing the dialog manually
+//
+//            AlertDialog progressDialog = builder.create();
+//            progressDialog.show(); // Show the progress dialog
+//
+//            // Call downloadTrajectory with a callback
+//            serverCommunications.downloadTrajectory(id, new ServerCommunications.DownloadResultCallback() {
+//                @Override
+//                public void onResult(boolean success) {
+//                    // Run UI updates on the main thread
+//                    getActivity().runOnUiThread(() -> {
+//                        // Dismiss the progress dialog now that the download is complete
+//                        progressDialog.dismiss();
+//
+//                        // Show the appropriate dialog based on the download result
+//                        if (success) { // If the download was successful
+//                            new AlertDialog.Builder(getContext())
+//                                    .setTitle("File downloaded")
+//                                    .setMessage("Trajectory downloaded to local storage")
+//                                    .setPositiveButton(R.string.ok, null)
+//                                    .setNegativeButton(R.string.show_storage, (dialog, which) ->
+//                                            startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)))
+//                                    .setIcon(R.drawable.ic_baseline_download_24)
+//                                    .show();
+//                        } else { // If the download failed
+//                            new AlertDialog.Builder(getContext())
+//                                    .setTitle("Download Failed")
+//                                    .setMessage("Trajectory download failed. Please try again.")
+//                                    .setPositiveButton(R.string.ok, null)
+//                                    .show();
+//                        }
+//                    });
+//                }
+//            });
+//        });
+//
+//        filesList.setAdapter(listAdapter);
     }
 
 //    private void updateView(List<Map<String, String>> entryList) {

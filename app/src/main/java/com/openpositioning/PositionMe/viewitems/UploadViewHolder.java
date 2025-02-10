@@ -29,6 +29,8 @@ public class UploadViewHolder extends RecyclerView.ViewHolder implements View.On
     private WeakReference<DownloadClickListener> listenerReference;
     public ImageButton deletebutton;
 
+    public ImageButton replaybutton;
+
     /**
      * {@inheritDoc}
      * Assign TextView fields corresponding to Trajectory file metadata.
@@ -48,6 +50,17 @@ public class UploadViewHolder extends RecyclerView.ViewHolder implements View.On
 
         this.uploadButton.setOnClickListener(this);
         this.deletebutton = itemView.findViewById(R.id.deletebutton);
+
+        this.replaybutton = itemView.findViewById(R.id.replayTrajectoryButton);
+        this.replaybutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 点击回放按钮时回调
+                if (listenerReference.get() != null) {
+                    listenerReference.get().onReplayClicked(getAdapterPosition());
+                }
+            }
+        });
     }
 
     /**

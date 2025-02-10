@@ -40,6 +40,9 @@ public class ReplayTrajFragment extends Fragment {
     private LatLng start;
     private Polyline polyline;
     private LatLng currentLocation;
+
+    private float currentOrientation;
+    private float nextOrientation;
     private Marker orientationMarker;
 
     private Timer readPdrTimer;
@@ -49,12 +52,14 @@ public class ReplayTrajFragment extends Fragment {
     private Traj.Trajectory trajectory;
     private int trajSize;
 
+    private ReplayDataProcessor.GlobalSingletonChild trajProcessor;
 
     private List<LatLng> pdrLocList;
     private List<Traj.Motion_Sample> imuDataList;
     private List<Traj.Pressure_Sample> pressureSampleList;
 
-    private int stepCount;
+    private int stepCount = 0;
+
     private int currProgress = 0;
     private int counterYaw = 0;
     private int counterPressure = 0;
@@ -72,17 +77,22 @@ public class ReplayTrajFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.trajProcessor = ReplayDataProcessor.GlobalSingletonChild.getInstance();
+        this.trajectory = trajProcessor.getReplayTraj();
         readPdrTimer = new Timer();
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_replay, container, false);
-        this.trajectory = ReplayDataProcessor.protoDecoder(file);
-        pdrLocList = ReplayDataProcessor.getPdrLoc(this.trajectory);
+//        this.trajectory = ReplayDataProcessor.protoDecoder(file);
+//        this.trajectory = trajProcessor.getReplayTraj();
+        pdrLocList = ReplayDataProcessor.translatePdrPath(this.trajectory);
         imuDataList = this.trajectory.getImuDataList();
         pressureSampleList = this.trajectory.getPressureDataList();
         trajSize = imuDataList.size();
+        float[] startLoc = ReplayDataProcessor.getStartLocation(trajectory);
+        currentLocation = new LatLng(startLoc[0], startLoc[1]);
 
         // Initialize map/ indoor map
         SupportMapFragment mapFragment = (SupportMapFragment)
@@ -109,6 +119,10 @@ public class ReplayTrajFragment extends Fragment {
                                 .icon(BitmapDescriptorFactory.fromBitmap(
                                         UtilFunctions.getBitmapFromVector(getContext(), R.drawable.ic_baseline_navigation_24)))
                                 .zIndex(1f));
+                        PolylineOptions polylineOptions=new PolylineOptions()
+                                .color(Color.RED)
+                                .add(currentLocation);
+                        polyline = replayMap.addPolyline(polylineOptions);
                         //Center the camera
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, (float) 19f));
                         indoorMapManager.setCurrentLocation(start);
@@ -164,24 +178,33 @@ public class ReplayTrajFragment extends Fragment {
         long nextTPressure = nextPressureSample.getRelativeTimestamp();
 
         if (relativeTBase >= nextTPressure) {
-            if (counterPressure < pressureSampleList.size()) {
-                currElev = nextPressureSample.getElev();
+            if (counterPressure < pressureSampleList.size()-2) {
+//                currElev = nextPressureSample.getElev();
+                currElev = trajectory.getPressureData(counterPressure).getEstimatedElevation();
+//                currElev = 0;
                 counterPressure++;
-                if (stepCount != imuDataList.get(counterYaw).getStepCount()) {
-                    currentLocation = pdrLocList.get(counterYaw);
-                    if (orientationMarker!=null) {
-                        orientationMarker.setRotation((float) );
-                        orientationMarker.setPosition(currentLocation);
-                    }
-                    PolylineOptions polylineOptions = new PolylineOptions()
-                            .color(Color.RED)
-                            .add(currentLocation)
-                            .zIndex(1f);
-                    polyline = replayMap.addPolyline(polylineOptions);
-                }
             }
         }
-        stepCount = imuDataList.get(counterYaw).getStepCount();
+        if (stepCount != imuDataList.get(counterYaw).getStepCount()) {
+            stepCount = imuDataList.get(counterYaw).getStepCount();
+            currentLocation = pdrLocList.get(stepCount);
+            List<LatLng> pointsMoved = polyline.getPoints();
+            pointsMoved.add(currentLocation);
+
+            if (orientationMarker!=null && currentLocation!=null) {
+                orientationMarker.setPosition(currentLocation);
+            }
+//            polyline = replayMap.addPolyline(polylineOptions);
+            polyline.setPoints(pointsMoved);
+        }
+
+        nextOrientation = trajectory.getImuData(counterYaw).getAzimuth();
+        if (orientationMarker!=null && currentOrientation!=nextOrientation) {
+            currentOrientation = nextOrientation;
+            orientationMarker.setRotation((float) Math.toDegrees(currentOrientation));
+        }
+//        System.out.println("stepCount: " + stepCount);
+//        stepCount = imuDataList.get(counterYaw).getStepCount();
         currProgress = (int) ((counterYaw * 100.0f) / trajSize);
         seekBar.setProgress(currProgress);
         counterYaw++;
@@ -214,7 +237,8 @@ public class ReplayTrajFragment extends Fragment {
 
                     if (relativeTBase >= nextTPressure) {
                         if (counterPressure < pressureSampleList.size()) {
-                            currElev = nextPressureSample.getElev();
+//                            currElev = nextPressureSample.getElev();
+                            currElev = 0;
                             counterPressure++;
                             if (stepCount != imuDataList.get(i).getStepCount()) {
                                 currentLocation = pdrLocList.get(i);
@@ -295,8 +319,9 @@ private void setupPlayPauseButton() {
                 long nextTPressure = nextPressureSample.getRelativeTimestamp();
 
                 if (relativeTBase >= nextTPressure) {
-                    if (counterPressure < pressureSampleList.size()) {
-                        currElev = nextPressureSample.getElev();
+                    if (counterPressure < pressureSampleList.size()-2) {
+//                        currElev = nextPressureSample.getElev();
+                        currElev = 0;
                         counterPressure++;
                         if (stepCount != imuDataList.get(i).getStepCount()) {
                             currentLocation = pdrLocList.get(i);

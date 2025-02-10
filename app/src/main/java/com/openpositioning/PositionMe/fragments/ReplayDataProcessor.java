@@ -28,23 +28,42 @@ import com.openpositioning.PositionMe.UtilFunctions;
 public class ReplayDataProcessor {
 
 
-    /**
-     * 这个子类用来携带 File 对象，便于在 Activity 或 Fragment 之间通过 Intent、Bundle 等方式传递
-     */
-    public static class ReplayFileData extends ReplayDataProcessor implements Serializable {
-        private static final long serialVersionUID = 1L;  // 序列化版本ID
-        private File file;
+    public static class GlobalSingletonChild extends ReplayDataProcessor {
 
-        public ReplayFileData(File file) {
-            this.file = file;
+        // ========== 1. 静态单例 ==========
+        private static final GlobalSingletonChild INSTANCE = new GlobalSingletonChild();
+
+        // 私有构造函数，禁止外部 new
+        private GlobalSingletonChild() {
         }
 
-        public File getFile() {
-            return file;
+        public static GlobalSingletonChild getInstance() {
+            return INSTANCE;
         }
 
-        public void setFile(File file) {
-            this.file = file;
+        // ========== 2. 你想要共享的数据字段 ==========
+        private Traj.Trajectory replayTraj;
+
+        // 也可以存放其他数据，比如轨迹、某些状态等
+        private final List<String> trajectoryPoints = new ArrayList<>();
+        // 或者 public final List<LatLng> trajectoryPoints = new ArrayList<>();
+        //    （如果你的轨迹用 LatLng 来表示）
+
+        // ========== 3. 对外的 get/set 方法 ==========
+        public Traj.Trajectory getReplayTraj() {
+            return replayTraj;
+        }
+
+        public void setReplayFile(Traj.Trajectory replayTraj) {
+            this.replayTraj = replayTraj;
+        }
+
+        public List<String> getTrajectoryPoints() {
+            return trajectoryPoints;
+        }
+
+        public void addTrajectoryPoint(String point) {
+            trajectoryPoints.add(point);
         }
     }
 
