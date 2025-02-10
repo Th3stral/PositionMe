@@ -144,7 +144,8 @@ public class IndoorMapManager {
             if (BuildingPolygon.inNucleus(currentLocation) && !isIndoorMapSet) {
                     groundOverlay = gMap.addGroundOverlay(new GroundOverlayOptions()
                             .image(BitmapDescriptorFactory.fromResource(R.drawable.nucleusg))
-                            .positionFromBounds(NUCLEUS));
+                            .positionFromBounds(NUCLEUS)
+                            .zIndex(0f));
                     isIndoorMapSet = true;
                     // Nucleus has an LG floor so G floor is at index 1
                     currentFloor=1;
@@ -154,7 +155,8 @@ public class IndoorMapManager {
             else if (BuildingPolygon.inLibrary(currentLocation) && !isIndoorMapSet) {
                     groundOverlay = gMap.addGroundOverlay(new GroundOverlayOptions()
                             .image(BitmapDescriptorFactory.fromResource(R.drawable.libraryg))
-                            .positionFromBounds(LIBRARY));
+                            .positionFromBounds(LIBRARY)
+                            .zIndex(0f));
                     isIndoorMapSet = true;
                     currentFloor=0;
                     floorHeight=LIBRARY_FLOOR_HEIGHT;
