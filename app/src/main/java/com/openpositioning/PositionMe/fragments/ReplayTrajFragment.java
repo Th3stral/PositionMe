@@ -3,6 +3,7 @@ package com.openpositioning.PositionMe.fragments;
 import android.graphics.Color;
 import android.os.Bundle;
 //import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,6 +65,8 @@ public class ReplayTrajFragment extends Fragment {
     private int counterYaw = 0;
     private int counterPressure = 0;
     private int counterYawLimit = 0;
+
+//    private int nextProgress;
     private float currElev;
 
     private SeekBar seekBar;
@@ -112,24 +115,14 @@ public class ReplayTrajFragment extends Fragment {
                     map.getUiSettings().setScrollGesturesEnabled(true);
 
                     // Add a marker at the start position and move the camera
-                    start = !pdrLocList.isEmpty() ? pdrLocList.get(0) : null;
-                    if (start != null) {
-                        orientationMarker = map.addMarker(new MarkerOptions().position(start).title("Current Position")
-                                .flat(true)
-                                .icon(BitmapDescriptorFactory.fromBitmap(
-                                        UtilFunctions.getBitmapFromVector(getContext(), R.drawable.ic_baseline_navigation_24)))
-                                .zIndex(1f));
-                        PolylineOptions polylineOptions=new PolylineOptions()
-                                .color(Color.RED)
-                                .add(currentLocation);
-                        polyline = replayMap.addPolyline(polylineOptions);
-                        //Center the camera
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, (float) 19f));
-                        indoorMapManager.setCurrentLocation(start);
-                        //Showing an indication of available indoor maps using PolyLines
-                        indoorMapManager.setIndicationOfIndoorMap();
+                    PositionInitialization();
+
+                    //Center the camera
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, (float) 19f));
+                    indoorMapManager.setCurrentLocation(start);
+                    //Showing an indication of available indoor maps using PolyLines
+                    indoorMapManager.setIndicationOfIndoorMap();
                     }
-                }
             });
         }
         seekBar = rootView.findViewById(R.id.seekBar);
@@ -164,6 +157,29 @@ public class ReplayTrajFragment extends Fragment {
             }
         };
     }
+
+    public void PositionInitialization(){
+        counterYaw = 0;
+        counterPressure = 0;
+        currProgress = 0;
+        stepCount = 0;
+        if(polyline != null) { polyline.remove(); }
+        if(orientationMarker != null) { orientationMarker.remove(); }
+        start = !pdrLocList.isEmpty() ? pdrLocList.get(0) : null;
+        if (start != null) {
+            orientationMarker = replayMap.addMarker(new MarkerOptions().position(start).title("Current Position")
+                    .flat(true)
+                    .icon(BitmapDescriptorFactory.fromBitmap(
+                            UtilFunctions.getBitmapFromVector(getContext(), R.drawable.ic_baseline_navigation_24)))
+                    .zIndex(6));
+            PolylineOptions polylineOptions=new PolylineOptions()
+                    .color(Color.RED)
+                    .add(currentLocation)
+                    .zIndex(6);
+            polyline = replayMap.addPolyline(polylineOptions);
+    }
+}
+
     public TimerTask drawPathView() {
         if (counterYaw >= imuDataList.size() - 1 || counterPressure >= pressureSampleList.size() - 1) {
             if (currTask != null) {
@@ -172,9 +188,7 @@ public class ReplayTrajFragment extends Fragment {
             isPlaying = false;
         }
         long relativeTBase = imuDataList.get(counterYaw).getRelativeTimestamp();
-//        Traj.Pressure_Sample currPressureSample = pressureSampleList.get(counterPressure);
         Traj.Pressure_Sample nextPressureSample = pressureSampleList.get(counterPressure + 1);
-//        float currElev; = currPressureSample.getElev();
         long nextTPressure = nextPressureSample.getRelativeTimestamp();
 
         if (relativeTBase >= nextTPressure) {
@@ -194,18 +208,18 @@ public class ReplayTrajFragment extends Fragment {
             if (orientationMarker!=null && currentLocation!=null) {
                 orientationMarker.setPosition(currentLocation);
             }
-//            polyline = replayMap.addPolyline(polylineOptions);
             polyline.setPoints(pointsMoved);
         }
-
         nextOrientation = trajectory.getImuData(counterYaw).getAzimuth();
         if (orientationMarker!=null && currentOrientation!=nextOrientation) {
             currentOrientation = nextOrientation;
             orientationMarker.setRotation((float) Math.toDegrees(currentOrientation));
         }
-//        System.out.println("stepCount: " + stepCount);
-//        stepCount = imuDataList.get(counterYaw).getStepCount();
         currProgress = (int) ((counterYaw * 100.0f) / trajSize);
+//        if (currProgress == 100){
+//            isPlaying = false;
+//            playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
+//        }
         seekBar.setProgress(currProgress);
         counterYaw++;
         return null;
@@ -223,42 +237,30 @@ public class ReplayTrajFragment extends Fragment {
             public void onStartTrackingTouch(SeekBar seekBar) {
                 if (currTask != null) {
                     currTask.cancel();
+                    isPlaying = false;
+                    playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
                 }
             }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int nextProgress = seekBar.getProgress();
                 counterYawLimit = (int) ((nextProgress / 100.0f) * trajSize - 1);
-                for (int i = 0; i < counterYawLimit; i++) {
-                    long relativeTBase = imuDataList.get(i).getRelativeTimestamp();
-
-                    Traj.Pressure_Sample nextPressureSample = pressureSampleList.get(counterPressure + 1);
-                    long nextTPressure = nextPressureSample.getRelativeTimestamp();
-
-                    if (relativeTBase >= nextTPressure) {
-                        if (counterPressure < pressureSampleList.size()) {
-//                            currElev = nextPressureSample.getElev();
-                            currElev = 0;
-                            counterPressure++;
-                            if (stepCount != imuDataList.get(i).getStepCount()) {
-                                currentLocation = pdrLocList.get(i);
-                                PolylineOptions polylineOptions = new PolylineOptions()
-                                        .color(Color.RED)
-                                        .add(currentLocation)
-                                        .zIndex(1f);
-                                polyline = replayMap.addPolyline(polylineOptions);
-                            }
-                        }
-                    }
-                    stepCount = imuDataList.get(i).getStepCount();
+                isPlaying = true;
+                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                if (currTask != null) {
+                    currTask.cancel();
+                    PositionInitialization();
                 }
-                currTask = drawPathView();
+                for (counterYaw = 0; counterYaw < counterYawLimit; counterYaw++) {
+                    drawPathView();
+                }
+                currTask = createTimerTask();
                 readPdrTimer.schedule(currTask, 0, TimeInterval);
             }
         });
     }
 
-    //return back to the last page
+    //return back to the last page/////////////////////////////////////////////////////
     private void ReplayBackButton() {
         replayBackButton = requireView().findViewById(R.id.ReplayBackButton);
         replayBackButton.setOnClickListener(view -> {
@@ -266,24 +268,28 @@ public class ReplayTrajFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
         });
-    }
+    }//////////////////////////////////////////////////////////////////////////////////
 
 
 // play / pause button control
 private void setupPlayPauseButton() {
     playPauseButton = requireView().findViewById(R.id.PlayPauseButton);
     playPauseButton.setOnClickListener(v -> {
-        if (isPlaying) {
-            if (currTask != null) {
-                currTask.cancel();
+        if (currTask != null) {
+            currTask.cancel();
+            if (isPlaying) {
+                isPlaying = false;
+                playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
+            } else {
+                if (currProgress == 100) {
+                    PositionInitialization();
+                    readPdrTimer = new Timer();
+                }
+                currTask = createTimerTask();
+                readPdrTimer.schedule(currTask, 0, TimeInterval);
+                isPlaying = true;
+                playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
             }
-            isPlaying = false;
-            playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
-        } else {
-            currTask = createTimerTask();
-            readPdrTimer.schedule(currTask, 0, TimeInterval);
-            isPlaying = true;
-            playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
         }
     });
 }
@@ -294,12 +300,7 @@ private void setupPlayPauseButton() {
             if (currTask != null) {
                 currTask.cancel();
             }
-            counterYaw = 0;
-            counterPressure = 0;
-            currProgress = 0;
-            stepCount = 0;
-            if(polyline != null) { polyline.remove(); }
-
+            PositionInitialization();
             currTask = createTimerTask();
             readPdrTimer.schedule(currTask, 0, TimeInterval);
             isPlaying = true;
@@ -308,35 +309,22 @@ private void setupPlayPauseButton() {
     private void setupGoToEndButton() {
         goToEndButton = requireView().findViewById(R.id.GoToEndButton);
         goToEndButton.setOnClickListener(v -> {
-            if (currTask != null) {
-                currTask.cancel();
+            try{
+                if (currTask != null) {
+                    currTask.cancel();
+                }}
+            catch (Exception e) {
+                Log.e("GoToEnd", "Fail to cancel currTask",e);
             }
+            if(seekBar.getProgress() != 100){
             counterYawLimit = trajSize - 1;
-            for (int i = 0; i < counterYawLimit; i++) {
-                long relativeTBase = imuDataList.get(i).getRelativeTimestamp();
-
-                Traj.Pressure_Sample nextPressureSample = pressureSampleList.get(counterPressure + 1);
-                long nextTPressure = nextPressureSample.getRelativeTimestamp();
-
-                if (relativeTBase >= nextTPressure) {
-                    if (counterPressure < pressureSampleList.size()-2) {
-//                        currElev = nextPressureSample.getElev();
-                        currElev = 0;
-                        counterPressure++;
-                        if (stepCount != imuDataList.get(i).getStepCount()) {
-                            currentLocation = pdrLocList.get(i);
-                            PolylineOptions polylineOptions = new PolylineOptions()
-                                    .color(Color.RED)
-                                    .add(currentLocation)
-                                    .zIndex(1f);
-                            polyline = replayMap.addPolyline(polylineOptions);
-                        }
-                    }
-                }
-                stepCount = imuDataList.get(i).getStepCount();
+            try{
+            for (counterYaw = 0; counterYaw < counterYawLimit; counterYaw++) { drawPathView(); }}
+            catch (Exception e){
+                Log.e("DrawLogic","Error Draw",e);
             }
             seekBar.setProgress(100);
-            isPlaying = false;
+            isPlaying = false;}
         });
     }
 }
