@@ -208,7 +208,8 @@ public class ReplayTrajFragment extends Fragment {
 
         startLoc = !pdrLocList.isEmpty() ? pdrLocList.get(0) : new LatLng(0,0);
         currElevation = trajectory.getPressureData(counterPressure).getEstimatedElevation();
-        ElevationPres.setText("Elevation:"+currElevation+"m");
+        String formatElevation = df.format(currElevation);
+        ElevationPres.setText("Elevation:"+formatElevation+"m");
         currentOrientation = imuDataList.get(counterYaw).getAzimuth();
 
         if (!gnssDataList.isEmpty() ){
@@ -244,8 +245,6 @@ public class ReplayTrajFragment extends Fragment {
 
         }
 
-
-
         if (startLoc != null) {
             orientationMarker = replayMap.addMarker(new MarkerOptions()
                     .position(startLoc)
@@ -258,6 +257,13 @@ public class ReplayTrajFragment extends Fragment {
                     .color(Color.RED)
                     .add(startLoc)
                     .zIndex(6);
+            if(indoorMapManager != null){
+                indoorMapManager.setCurrentLocation(startLoc);
+                if(indoorMapManager.getIsIndoorMapSet()){
+                    indoorMapManager.setCurrentFloor((int)(currElevation/indoorMapManager.getFloorHeight())
+                            ,true);
+                }
+            }
 
             pdrPolyline = replayMap.addPolyline(polylineOptions);
 
@@ -299,7 +305,8 @@ public class ReplayTrajFragment extends Fragment {
             // Ensure the last pressure sample is used when counterPressure reaches the last index
             currElevation = pressureSampleList.get(counterPressure).getEstimatedElevation();
         }
-
+        String formatElevation = df.format(currElevation);
+        ElevationPres.setText("Elevation:"+formatElevation+"m");
         // ===== GNSS value update logic ===== //
         if (!gnssDataList.isEmpty() && counterGnss < gnssDataList.size() - 1) {
             // always take the next gnss sample
