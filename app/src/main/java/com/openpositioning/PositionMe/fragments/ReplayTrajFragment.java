@@ -14,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -47,6 +48,7 @@ public class ReplayTrajFragment extends Fragment {
     public IndoorMapManager indoorMapManager;
     private Spinner switchMapSpinner;
     private Switch GNSSSwitchControl;
+    private TextView ElevationPres;
 
     private static final DecimalFormat df = new DecimalFormat("#.####");
 
@@ -147,6 +149,7 @@ public class ReplayTrajFragment extends Fragment {
             });
         }
         seekBar = rootView.findViewById(R.id.seekBar);
+        ElevationPres = rootView.findViewById(R.id.ElevationView);
         seekBar.setMax(100);
         return rootView;
     }
@@ -205,6 +208,7 @@ public class ReplayTrajFragment extends Fragment {
 
         startLoc = !pdrLocList.isEmpty() ? pdrLocList.get(0) : new LatLng(0,0);
         currElevation = trajectory.getPressureData(counterPressure).getEstimatedElevation();
+        ElevationPres.setText("Elevation:"+currElevation+"m");
         currentOrientation = imuDataList.get(counterYaw).getAzimuth();
 
         if (!gnssDataList.isEmpty() ){
@@ -501,6 +505,7 @@ private void setupPlayPauseButton() {
             }
         });
     }
+
 
 
     private void mapDropdown(){
