@@ -115,7 +115,7 @@
             app:destination="@id/ReplayTrajFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_left" />
     </fragment><action android:id="@+id/action_global_correctionFragment" app:destination="@id/correctionFragment"/>
     <fragment
         android:id="@+id/uploadFragment"

@@ -7,8 +7,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -40,6 +45,8 @@ public class ReplayTrajFragment extends Fragment {
     // For initialize map to replay with indoor map
     private GoogleMap replayMap;
     public IndoorMapManager indoorMapManager;
+    private Spinner switchMapSpinner;
+    private Switch GNSSSwitchControl;
 
     private static final DecimalFormat df = new DecimalFormat("#.####");
 
@@ -82,7 +89,6 @@ public class ReplayTrajFragment extends Fragment {
 
 //    private int nextProgress;
 
-
     private SeekBar seekBar;
     private ImageButton replayButton;
     private ImageButton replayBackButton;
@@ -120,19 +126,19 @@ public class ReplayTrajFragment extends Fragment {
                 public void onMapReady(@NonNull GoogleMap map) {
                     replayMap = map;
                     //Initialising the indoor map manager object
-                    indoorMapManager = new IndoorMapManager(map);
+                    indoorMapManager = new IndoorMapManager(replayMap);
                     // Setting map attributes
-                    map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-                    map.getUiSettings().setCompassEnabled(true);
-                    map.getUiSettings().setTiltGesturesEnabled(true);
-                    map.getUiSettings().setRotateGesturesEnabled(true);
-                    map.getUiSettings().setScrollGesturesEnabled(true);
+                    replayMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                    replayMap.getUiSettings().setCompassEnabled(true);
+                    replayMap.getUiSettings().setTiltGesturesEnabled(true);
+                    replayMap.getUiSettings().setRotateGesturesEnabled(true);
+                    replayMap.getUiSettings().setScrollGesturesEnabled(true);
 
                     // Add a marker at the start position and move the camera
                     PositionInitialization();
 
                     //Center the camera
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLoc, (float) 19f));
+                    replayMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLoc, (float) 19f));
                     indoorMapManager.setCurrentLocation(startLoc);
                     //Showing an indication of available indoor maps using PolyLines
                     indoorMapManager.setIndicationOfIndoorMap();
@@ -151,6 +157,12 @@ public class ReplayTrajFragment extends Fragment {
         setupGoToEndButton();
         setupPlayPauseButton();
         ProgressView();
+        GNSSSwitch();
+
+        // Configuring dropdown for switching map types
+        mapDropdown();
+        // Setting listener for the switching map types dropdown
+        switchMap();
 
         currTask = createTimerTask();
         this.readPdrTimer.schedule(currTask, 0, TimeInterval);
@@ -330,6 +342,14 @@ public class ReplayTrajFragment extends Fragment {
                 pointsMoved.add(currentLocation);
                 pdrPolyline.setPoints(pointsMoved);
             }
+
+            if(indoorMapManager != null){
+                    indoorMapManager.setCurrentLocation(currentLocation);
+                    if(indoorMapManager.getIsIndoorMapSet()){
+                        indoorMapManager.setCurrentFloor((int)(currElevation/indoorMapManager.getFloorHeight())
+                        ,true);
+                    }
+            }
         }
 
         // ===== progress bar update logic ===== //
@@ -442,6 +462,64 @@ private void setupPlayPauseButton() {
             }
             seekBar.setProgress(100);
             isPlaying = false;}
+        });
+    }
+
+    private void GNSSSwitch(){
+        GNSSSwitchControl = requireView().findViewById(R.id.switchGNSS);
+        GNSSSwitchControl.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // 开关打开时，添加 polyline
+                } else {
+                    // 开关关闭时，可以选择移除 polyline
+                }
+            }
+        });
+    }
+
+
+    private void mapDropdown(){
+        // Creating and Initialising options for Map's Dropdown Menu
+        switchMapSpinner = (Spinner) getView().findViewById(R.id.ReplayMapSwitchSpinner);
+        // Different Map Types
+        String[] maps = new String[]{getString(R.string.hybrid), getString(R.string.normal), getString(R.string.satellite)};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, maps);
+        // Set the Dropdowns menu adapter
+        switchMapSpinner.setAdapter(adapter);
+    }
+    private void switchMap(){
+        // Switch between map type based on user input
+        this.switchMapSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            /**
+             * {@inheritDoc}
+             * OnItemSelected listener to switch maps.
+             * The map switches between MAP_TYPE_NORMAL, MAP_TYPE_SATELLITE
+             * and MAP_TYPE_HYBRID based on user selection.
+             */
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        replayMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                        break;
+                    case 1:
+                        replayMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                        break;
+                    case 2:
+                        replayMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                        break;
+                }
+            }
+            /**
+             * {@inheritDoc}
+             * When Nothing is selected set to MAP_TYPE_HYBRID (NORMAL and SATELLITE)
+             */
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                replayMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            }
         });
     }
 }
