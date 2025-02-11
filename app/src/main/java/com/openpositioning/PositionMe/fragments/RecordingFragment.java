@@ -239,7 +239,7 @@ public class RecordingFragment extends Fragment {
         //Initialise UI components
         this.elevation = getView().findViewById(R.id.currentElevation);
         this.distanceTravelled = getView().findViewById(R.id.currentDistanceTraveled);
-        this.gnssError =getView().findViewById(R.id.gnssError);
+        this.gnssError = getView().findViewById(R.id.gnssError);
 
 
         //Set default text of TextViews to 0
