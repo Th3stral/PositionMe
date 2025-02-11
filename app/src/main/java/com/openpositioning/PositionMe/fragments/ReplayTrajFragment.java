@@ -56,6 +56,7 @@ public class ReplayTrajFragment extends Fragment {
     private Polyline gnssPolyline;
     private List<Circle> circleList = new ArrayList<>();
     private Marker gnssMarker;
+    private boolean gnssEnabled = true;
     private LatLng currentLocation;
 
     private LatLng currentGnssLoc;
@@ -216,13 +217,15 @@ public class ReplayTrajFragment extends Fragment {
                     .fillColor(0x0277A88D)
                     .radius(radius)
                     .center(currentGnssLoc)
-                    .zIndex(0);
+                    .zIndex(0)
+                    .visible(gnssEnabled);
             circleList.add(replayMap.addCircle(circleOptions));
 
             PolylineOptions gnssPolylineOptions=new PolylineOptions()
                     .color(Color.BLUE)
                     .add(currentGnssLoc)
-                    .zIndex(6);
+                    .zIndex(6)
+                    .visible(gnssEnabled);
             gnssPolyline = replayMap.addPolyline(gnssPolylineOptions);
 
             String formattedLat = df.format(currentGnssLoc.latitude);
@@ -232,7 +235,8 @@ public class ReplayTrajFragment extends Fragment {
                     .title("GNSS position")
                     .snippet("Acc: " + radius + " Alt: " + altitude)
                     .position(currentGnssLoc)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .visible(gnssEnabled));
 
         }
 
@@ -306,14 +310,17 @@ public class ReplayTrajFragment extends Fragment {
                         .fillColor(0x0277A88D)
                         .radius(radius)
                         .center(currentGnssLoc)
-                        .zIndex(0);
+                        .zIndex(0)
+                        .visible(gnssEnabled);
                 circleList.add(replayMap.addCircle(circleOptions));
 
                 List<LatLng> pointsMoved = gnssPolyline.getPoints();
                 pointsMoved.add(currentGnssLoc);
                 gnssPolyline.setPoints(pointsMoved);
+                gnssPolyline.setVisible(gnssEnabled);
 
                 gnssMarker.setPosition(currentGnssLoc);
+                gnssMarker.setVisible(gnssEnabled);
 
                 float altitude = nextGnssSample.getAltitude();
                 gnssMarker.setTitle("GNSS position");
@@ -471,9 +478,25 @@ private void setupPlayPauseButton() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // 开关打开时，添加 polyline
+                    gnssEnabled = true;
+                    if(gnssPolyline != null) gnssPolyline.setVisible(true);
+                    if(gnssMarker != null) gnssMarker.setVisible(true);
+                    if(circleList != null) {
+                        for (Circle circle : circleList) {
+                            circle.setVisible(true);
+                        }
+                    }
+
                 } else {
-                    // 开关关闭时，可以选择移除 polyline
+                    gnssEnabled = false;
+                    if(gnssPolyline != null) gnssPolyline.setVisible(false);
+                    if(gnssMarker != null) gnssMarker.setVisible(false);
+                    if(circleList != null) {
+                        for (Circle circle : circleList) {
+                            circle.setVisible(false);
+                        }
+                    }
+
                 }
             }
         });
