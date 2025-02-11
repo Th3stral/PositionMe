@@ -38,12 +38,11 @@ public class ReplayTrajFragment extends Fragment {
     public IndoorMapManager indoorMapManager;
 
 //    public ReplayDataProcessor ReplayDataProcessor;
-    private LatLng start;
+    private LatLng startLoc;
     private Polyline polyline;
     private LatLng currentLocation;
 
     private float currentOrientation;
-    private float nextOrientation;
     private Marker orientationMarker;
 
     private Timer readPdrTimer;
@@ -59,7 +58,9 @@ public class ReplayTrajFragment extends Fragment {
     private List<Traj.Motion_Sample> imuDataList;
     private List<Traj.Pressure_Sample> pressureSampleList;
 
-    private int stepCount = 0;
+    private int currStepCount = 0;
+
+    private float currElevation;
 
     private int currProgress = 0;
     private int counterYaw = 0;
@@ -67,7 +68,7 @@ public class ReplayTrajFragment extends Fragment {
     private int counterYawLimit = 0;
 
 //    private int nextProgress;
-    private float currElev;
+
 
     private SeekBar seekBar;
     private ImageButton replayButton;
@@ -88,14 +89,12 @@ public class ReplayTrajFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_replay, container, false);
-//        this.trajectory = ReplayDataProcessor.protoDecoder(file);
-//        this.trajectory = trajProcessor.getReplayTraj();
         pdrLocList = ReplayDataProcessor.translatePdrPath(this.trajectory);
         imuDataList = this.trajectory.getImuDataList();
         pressureSampleList = this.trajectory.getPressureDataList();
         trajSize = imuDataList.size();
-        float[] startLoc = ReplayDataProcessor.getStartLocation(trajectory);
-        currentLocation = new LatLng(startLoc[0], startLoc[1]);
+//        float[] startLoc = ReplayDataProcessor.getStartLocation(trajectory);
+//        currentLocation = new LatLng(startLoc[0], startLoc[1]);
 
         // Initialize map/ indoor map
         SupportMapFragment mapFragment = (SupportMapFragment)
@@ -118,8 +117,8 @@ public class ReplayTrajFragment extends Fragment {
                     PositionInitialization();
 
                     //Center the camera
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, (float) 19f));
-                    indoorMapManager.setCurrentLocation(start);
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLoc, (float) 19f));
+                    indoorMapManager.setCurrentLocation(startLoc);
                     //Showing an indication of available indoor maps using PolyLines
                     indoorMapManager.setIndicationOfIndoorMap();
                     }
@@ -162,65 +161,88 @@ public class ReplayTrajFragment extends Fragment {
         counterYaw = 0;
         counterPressure = 0;
         currProgress = 0;
-        stepCount = 0;
+        currStepCount = 0;
         if(polyline != null) { polyline.remove(); }
         if(orientationMarker != null) { orientationMarker.remove(); }
-        start = !pdrLocList.isEmpty() ? pdrLocList.get(0) : null;
-        if (start != null) {
-            orientationMarker = replayMap.addMarker(new MarkerOptions().position(start).title("Current Position")
+        startLoc = !pdrLocList.isEmpty() ? pdrLocList.get(0) : new LatLng(0,0);
+        currElevation = trajectory.getPressureData(counterPressure).getEstimatedElevation();
+        currentOrientation = imuDataList.get(counterYaw).getAzimuth();
+
+        if (startLoc != null) {
+            orientationMarker = replayMap.addMarker(new MarkerOptions().position(startLoc).title("Current Position")
                     .flat(true)
                     .icon(BitmapDescriptorFactory.fromBitmap(
                             UtilFunctions.getBitmapFromVector(getContext(), R.drawable.ic_baseline_navigation_24)))
                     .zIndex(6));
             PolylineOptions polylineOptions=new PolylineOptions()
                     .color(Color.RED)
-                    .add(currentLocation)
+                    .add(startLoc)
                     .zIndex(6);
             polyline = replayMap.addPolyline(polylineOptions);
     }
 }
 
     public TimerTask drawPathView() {
-        if (counterYaw >= imuDataList.size() - 1 || counterPressure >= pressureSampleList.size() - 1) {
+
+        // ===== break logic ===== //
+        if (counterYaw >= imuDataList.size() - 1) {
             if (currTask != null) {
                 currTask.cancel();
             }
             isPlaying = false;
+            return null;
         }
+
+        // ===== orientation value update logic ===== //
+        // get base tick
         long relativeTBase = imuDataList.get(counterYaw).getRelativeTimestamp();
-        Traj.Pressure_Sample nextPressureSample = pressureSampleList.get(counterPressure + 1);
-        long nextTPressure = nextPressureSample.getRelativeTimestamp();
 
-        if (relativeTBase >= nextTPressure) {
-            if (counterPressure < pressureSampleList.size()-2) {
-//                currElev = nextPressureSample.getElev();
-                currElev = trajectory.getPressureData(counterPressure).getEstimatedElevation();
-//                currElev = 0;
-                counterPressure++;
-            }
-        }
-        if (stepCount != imuDataList.get(counterYaw).getStepCount()) {
-            stepCount = imuDataList.get(counterYaw).getStepCount();
-            currentLocation = pdrLocList.get(stepCount);
-            List<LatLng> pointsMoved = polyline.getPoints();
-            pointsMoved.add(currentLocation);
-
-            if (orientationMarker!=null && currentLocation!=null) {
-                orientationMarker.setPosition(currentLocation);
-            }
-            polyline.setPoints(pointsMoved);
-        }
-        nextOrientation = trajectory.getImuData(counterYaw).getAzimuth();
-        if (orientationMarker!=null && currentOrientation!=nextOrientation) {
+        float nextOrientation = trajectory.getImuData(counterYaw).getAzimuth();
+        if (orientationMarker!=null && currentOrientation!= nextOrientation) {
             currentOrientation = nextOrientation;
             orientationMarker.setRotation((float) Math.toDegrees(currentOrientation));
         }
+
+        // ===== pressure value update logic ===== //
+        if (counterPressure < pressureSampleList.size() - 1) {
+            // always take the next pressure sample
+            Traj.Pressure_Sample nextPressureSample = pressureSampleList.get(counterPressure + 1);
+            long nextTPressure = nextPressureSample.getRelativeTimestamp();
+            float nextElevation = nextPressureSample.getEstimatedElevation();
+            if (relativeTBase >= nextTPressure) {
+                currElevation = nextElevation;
+                counterPressure++;
+            }
+        } else {
+            // Ensure the last pressure sample is used when counterPressure reaches the last index
+            currElevation = pressureSampleList.get(counterPressure).getEstimatedElevation();
+        }
+
+        // ===== pdr value update logic ===== //
+        int nextStepCount = imuDataList.get(counterYaw).getStepCount();
+        if (currStepCount != nextStepCount) {
+            currStepCount = nextStepCount;
+            currentLocation = pdrLocList.get(currStepCount);
+
+            // move the marker
+            if (orientationMarker!=null) {
+                orientationMarker.setPosition(currentLocation);
+            }
+
+            if (polyline!=null) {
+                // get existing points
+                List<LatLng> pointsMoved = polyline.getPoints();
+                // add new point
+                pointsMoved.add(currentLocation);
+                polyline.setPoints(pointsMoved);
+            }
+        }
+
+        // ===== progress bar update logic ===== //
         currProgress = (int) ((counterYaw * 100.0f) / trajSize);
-//        if (currProgress == 100){
-//            isPlaying = false;
-//            playPauseButton.setImageResource(R.drawable.ic_baseline_play_arrow_24);
-//        }
         seekBar.setProgress(currProgress);
+
+        // ===== counter update logic ===== //
         counterYaw++;
         return null;
     }
@@ -247,11 +269,12 @@ public class ReplayTrajFragment extends Fragment {
                 counterYawLimit = (int) ((nextProgress / 100.0f) * trajSize - 1);
                 isPlaying = true;
                 playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
-                if (currTask != null) {
-                    currTask.cancel();
-                    PositionInitialization();
-                }
-                for (counterYaw = 0; counterYaw < counterYawLimit; counterYaw++) {
+//                if (currTask != null) {
+//                    currTask.cancel();
+//                    PositionInitialization();
+//                }
+                PositionInitialization();
+                for (counterYaw = 0; counterYaw <= counterYawLimit; counterYaw++) {
                     drawPathView();
                 }
                 currTask = createTimerTask();
