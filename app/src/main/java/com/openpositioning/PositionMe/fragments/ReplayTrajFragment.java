@@ -18,6 +18,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -28,6 +30,8 @@ import com.openpositioning.PositionMe.UtilFunctions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,10 +41,17 @@ public class ReplayTrajFragment extends Fragment {
     private GoogleMap replayMap;
     public IndoorMapManager indoorMapManager;
 
+    private static final DecimalFormat df = new DecimalFormat("#.####");
+
 //    public ReplayDataProcessor ReplayDataProcessor;
     private LatLng startLoc;
-    private Polyline polyline;
+    private Polyline pdrPolyline;
+    private Polyline gnssPolyline;
+    private List<Circle> circleList = new ArrayList<>();
+    private Marker gnssMarker;
     private LatLng currentLocation;
+
+    private LatLng currentGnssLoc;
 
     private float currentOrientation;
     private Marker orientationMarker;
@@ -57,6 +68,7 @@ public class ReplayTrajFragment extends Fragment {
     private List<LatLng> pdrLocList;
     private List<Traj.Motion_Sample> imuDataList;
     private List<Traj.Pressure_Sample> pressureSampleList;
+    private List<Traj.GNSS_Sample> gnssDataList;
 
     private int currStepCount = 0;
 
@@ -65,6 +77,7 @@ public class ReplayTrajFragment extends Fragment {
     private int currProgress = 0;
     private int counterYaw = 0;
     private int counterPressure = 0;
+    private int counterGnss = 0;
     private int counterYawLimit = 0;
 
 //    private int nextProgress;
@@ -92,6 +105,8 @@ public class ReplayTrajFragment extends Fragment {
         pdrLocList = ReplayDataProcessor.translatePdrPath(this.trajectory);
         imuDataList = this.trajectory.getImuDataList();
         pressureSampleList = this.trajectory.getPressureDataList();
+        gnssDataList = this.trajectory.getGnssDataList();
+
         trajSize = imuDataList.size();
 //        float[] startLoc = ReplayDataProcessor.getStartLocation(trajectory);
 //        currentLocation = new LatLng(startLoc[0], startLoc[1]);
@@ -162,14 +177,59 @@ public class ReplayTrajFragment extends Fragment {
         counterPressure = 0;
         currProgress = 0;
         currStepCount = 0;
-        if(polyline != null) { polyline.remove(); }
+        counterGnss = 0;
+
+        if(pdrPolyline != null) { pdrPolyline.remove(); }
         if(orientationMarker != null) { orientationMarker.remove(); }
+        if(gnssMarker != null) { gnssMarker.remove(); }
+        if(circleList != null) {
+            for (Circle circle : circleList) {
+                circle.remove();
+            }
+            circleList.clear();
+        }
+        if(gnssPolyline != null) { gnssPolyline.remove(); }
+
         startLoc = !pdrLocList.isEmpty() ? pdrLocList.get(0) : new LatLng(0,0);
         currElevation = trajectory.getPressureData(counterPressure).getEstimatedElevation();
         currentOrientation = imuDataList.get(counterYaw).getAzimuth();
 
+        if (!gnssDataList.isEmpty() ){
+            Traj.GNSS_Sample gnssStartData = gnssDataList.get(counterGnss);
+            currentGnssLoc = new LatLng(gnssStartData.getLatitude(), gnssStartData.getLongitude());
+            float radius = gnssStartData.getAccuracy();
+            CircleOptions circleOptions = new CircleOptions()
+                    .strokeWidth(2)
+                    .strokeColor(Color.BLUE)
+                    .fillColor(0x0277A88D)
+                    .radius(radius)
+                    .center(currentGnssLoc)
+                    .zIndex(0);
+            circleList.add(replayMap.addCircle(circleOptions));
+
+            PolylineOptions gnssPolylineOptions=new PolylineOptions()
+                    .color(Color.BLUE)
+                    .add(currentGnssLoc)
+                    .zIndex(6);
+            gnssPolyline = replayMap.addPolyline(gnssPolylineOptions);
+
+            String formattedLat = df.format(currentGnssLoc.latitude);
+            String formattedLng = df.format(currentGnssLoc.longitude);
+            float altitude = gnssStartData.getAltitude();
+            gnssMarker = replayMap.addMarker(new MarkerOptions()
+                    .title("GNSS position")
+                    .snippet("Acc: " + radius + " Alt: " + altitude)
+                    .position(currentGnssLoc)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+        }
+
+
+
         if (startLoc != null) {
-            orientationMarker = replayMap.addMarker(new MarkerOptions().position(startLoc).title("Current Position")
+            orientationMarker = replayMap.addMarker(new MarkerOptions()
+                    .position(startLoc)
+                    .title("Current Position")
                     .flat(true)
                     .icon(BitmapDescriptorFactory.fromBitmap(
                             UtilFunctions.getBitmapFromVector(getContext(), R.drawable.ic_baseline_navigation_24)))
@@ -178,7 +238,9 @@ public class ReplayTrajFragment extends Fragment {
                     .color(Color.RED)
                     .add(startLoc)
                     .zIndex(6);
-            polyline = replayMap.addPolyline(polylineOptions);
+
+            pdrPolyline = replayMap.addPolyline(polylineOptions);
+
     }
 }
 
@@ -218,6 +280,38 @@ public class ReplayTrajFragment extends Fragment {
             currElevation = pressureSampleList.get(counterPressure).getEstimatedElevation();
         }
 
+        // ===== GNSS value update logic ===== //
+        if (!gnssDataList.isEmpty() && counterGnss < gnssDataList.size() - 1) {
+            // always take the next gnss sample
+            Traj.GNSS_Sample nextGnssSample = gnssDataList.get(counterGnss + 1);
+            long nextTGnss = nextGnssSample.getRelativeTimestamp();
+            if (relativeTBase >= nextTGnss) {
+                currentGnssLoc = new LatLng(nextGnssSample.getLatitude(), nextGnssSample.getLongitude());
+                float radius = nextGnssSample.getAccuracy();
+                CircleOptions circleOptions = new CircleOptions()
+                        .strokeWidth(2)
+                        .strokeColor(Color.BLUE)
+                        .fillColor(0x0277A88D)
+                        .radius(radius)
+                        .center(currentGnssLoc)
+                        .zIndex(0);
+                circleList.add(replayMap.addCircle(circleOptions));
+
+                List<LatLng> pointsMoved = gnssPolyline.getPoints();
+                pointsMoved.add(currentGnssLoc);
+                gnssPolyline.setPoints(pointsMoved);
+
+                gnssMarker.setPosition(currentGnssLoc);
+
+                float altitude = nextGnssSample.getAltitude();
+                gnssMarker.setTitle("GNSS position");
+                gnssMarker.setSnippet("Acc: " + radius + "m" + " Alt: " + altitude + "m");
+
+                counterGnss++;
+            }
+
+        }
+
         // ===== pdr value update logic ===== //
         int nextStepCount = imuDataList.get(counterYaw).getStepCount();
         if (currStepCount != nextStepCount) {
@@ -229,12 +323,12 @@ public class ReplayTrajFragment extends Fragment {
                 orientationMarker.setPosition(currentLocation);
             }
 
-            if (polyline!=null) {
+            if (pdrPolyline!=null) {
                 // get existing points
-                List<LatLng> pointsMoved = polyline.getPoints();
+                List<LatLng> pointsMoved = pdrPolyline.getPoints();
                 // add new point
                 pointsMoved.add(currentLocation);
-                polyline.setPoints(pointsMoved);
+                pdrPolyline.setPoints(pointsMoved);
             }
         }
 

@@ -149,7 +149,6 @@ public class ReplayDataProcessor {
         return startLocation;
     }
 
-
     public static List<Traj.GNSS_Sample> getGNSSDataList (Traj.Trajectory trajectory) {
         // TODO: null handling
         List<Traj.GNSS_Sample> gnssDataList = trajectory.getGnssDataList();
@@ -214,7 +213,7 @@ public class ReplayDataProcessor {
             latLngList.add(startLocation); // Temp solution
         }
 
-        List<Traj.Pdr_Sample> pdrDataList = getPdrDataList(trajectory);
+        List<Traj.Pdr_Sample> pdrDataList = trajectory.getPdrDataList();
 
         for (Traj.Pdr_Sample data : pdrDataList) {
             float[] pdrMoved = {data.getX(), data.getY()};
