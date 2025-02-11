@@ -40,13 +40,18 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.804" />
 
+
         <Spinner
             android:id="@+id/ReplayMapSwitchSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:background="@color/white"
+            android:layout_width="80dp"
+            android:layout_height="42dp"
+            android:background="@drawable/rounded_corner"
+            android:backgroundTint="#E7E7E7"
+            android:backgroundTintMode="src_in"
+            android:popupBackground="@drawable/rounded_corner"
             android:spinnerMode="dropdown"
             android:text="@string/choose_map"
+            android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.95"
@@ -94,14 +99,33 @@
             android:id="@+id/switchGNSS"
             android:layout_width="146dp"
             android:layout_height="24dp"
+            android:background="@drawable/rounded_corner_lightblue"
+            android:backgroundTint="#E7E7E7"
             android:text="@string/GNSSposition"
             android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.939"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ReplayMapSwitchSpinner"
+            app:layout_constraintVertical_bias="0.031" />
+
+        <TextView
+            android:id="@+id/ElevationView"
+            android:layout_width="178dp"
+            android:layout_height="42dp"
+            android:background="@drawable/rounded_corner_lightblue_medium"
+            android:backgroundTint="#E7E7E7"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/ElevationPres"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.129" />
+            app:layout_constraintVertical_bias="0.043" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
