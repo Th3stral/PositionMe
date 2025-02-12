@@ -112,8 +112,14 @@ public class ReplayTrajFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_replay, container, false);
         pdrLocList = ReplayDataProcessor.translatePdrPath(this.trajectory);
-        imuDataList = this.trajectory.getImuDataList();
-        pressureSampleList = this.trajectory.getPressureDataList();
+//        imuDataList = this.trajectory.getImuDataList();
+        imuDataList = ReplayDataProcessor.getMotionDataList(this.trajectory);
+//        pressureSampleList = this.trajectory.getPressureDataList();
+//        if (!ReplayDataProcessor.hasEstimatedAltitude(this.trajectory)) {
+//            pressureSampleList = ReplayDataProcessor.pressureSampleAdapter(pressureSampleList);
+//        }
+        pressureSampleList = ReplayDataProcessor.getPressureDataList(this.trajectory);
+
         gnssDataList = this.trajectory.getGnssDataList();
 
         trajSize = imuDataList.size();
@@ -211,6 +217,7 @@ public class ReplayTrajFragment extends Fragment {
         String formatElevation = df.format(currElevation);
         ElevationPres.setText("Elevation:"+formatElevation+"m");
         currentOrientation = imuDataList.get(counterYaw).getAzimuth();
+        System.out.println("init Orientation: " + currentOrientation);
 
         if (!gnssDataList.isEmpty() ){
             Traj.GNSS_Sample gnssStartData = gnssDataList.get(counterGnss);
@@ -285,9 +292,10 @@ public class ReplayTrajFragment extends Fragment {
         // get base tick
         long relativeTBase = imuDataList.get(counterYaw).getRelativeTimestamp();
 
-        float nextOrientation = trajectory.getImuData(counterYaw).getAzimuth();
+        float nextOrientation = imuDataList.get(counterYaw).getAzimuth();
         if (orientationMarker!=null && currentOrientation!= nextOrientation) {
             currentOrientation = nextOrientation;
+            System.out.println("Current Orientation: " + currentOrientation);
             orientationMarker.setRotation((float) Math.toDegrees(currentOrientation));
         }
 
